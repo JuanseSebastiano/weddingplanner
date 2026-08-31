@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { Plus, Search, Upload, Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,7 +64,9 @@ export function ListaInvitados({
 
   const grupos = useMemo(
     () =>
-      [...new Set(invitados.map((i) => i.grupo).filter(Boolean))].sort() as string[],
+      [
+        ...new Set(invitados.map((i) => i.grupo).filter(Boolean)),
+      ].sort() as string[],
     [invitados],
   );
 
@@ -104,7 +106,12 @@ export function ListaInvitados({
               <ImportarInvitados />
             </SheetContent>
           </Sheet>
-          <Button variant="outline" size="icon" asChild aria-label="Exportar CSV">
+          <Button
+            variant="outline"
+            size="icon"
+            asChild
+            aria-label="Exportar CSV"
+          >
             <a href="/invitados/export">
               <Download className="h-5 w-5" />
             </a>
@@ -279,9 +286,14 @@ function Contador({ valor, label }: { valor: number; label: string }) {
   );
 }
 
-/** Tocar el estado lo rota pendiente → confirmado → no viene, sin abrir la ficha. */
+/**
+ * Tocar el estado lo rota pendiente → confirmado → no viene, sin abrir la ficha.
+ * Se pinta al instante y recién después viaja al servidor: si algo falla,
+ * useOptimistic vuelve solo al valor real.
+ */
 function RsvpRapido({ invitado }: { invitado: Invitado }) {
-  const [pendiente, startTransition] = useTransition();
+  const [rsvp, setRsvp] = useOptimistic(invitado.rsvp);
+  const [, startTransition] = useTransition();
   const siguiente = {
     pendiente: "confirmado",
     confirmado: "rechazado",
@@ -291,23 +303,15 @@ function RsvpRapido({ invitado }: { invitado: Invitado }) {
   return (
     <button
       aria-label={`Cambiar RSVP de ${invitado.nombre}`}
-      disabled={pendiente}
       onClick={() =>
         startTransition(async () => {
-          await actualizarInvitado(invitado.id, {
-            rsvp: siguiente[invitado.rsvp],
-          });
+          setRsvp(siguiente[rsvp]);
+          await actualizarInvitado(invitado.id, { rsvp: siguiente[rsvp] });
         })
       }
     >
-      <Badge
-        className={cn(
-          "shrink-0 px-2.5 py-1",
-          RSVP_COLOR[invitado.rsvp],
-          pendiente && "opacity-50",
-        )}
-      >
-        {RSVP_LABEL[invitado.rsvp]}
+      <Badge className={cn("shrink-0 px-2.5 py-1", RSVP_COLOR[rsvp])}>
+        {RSVP_LABEL[rsvp]}
       </Badge>
     </button>
   );

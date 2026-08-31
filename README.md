@@ -100,6 +100,13 @@ npm run build   # build de producción
 npm run lint    # eslint
 ```
 
+## Foto de portada
+
+El dashboard (`/`) muestra una foto de fondo detrás de la cuenta regresiva.
+Para cargarla: guardar el archivo como `public/portada.jpg` (formato horizontal,
+1200px de ancho o más) y hacer commit — no hace falta tocar código. Sin el
+archivo, se ve un fondo de color en su lugar.
+
 ## Notas de implementación
 
 - **Dual ARS/USD**: cada monto guarda su moneda. Un pago en dólares guarda además

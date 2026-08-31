@@ -4,12 +4,14 @@ import { Agenda } from "./agenda";
 
 export default async function AgendaPage() {
   const supabase = await createClient();
-  const wedding = await getWedding();
 
-  const { data: eventos } = await supabase
-    .from("timeline_events")
-    .select("id, hora, actividad, responsable, notas")
-    .order("hora");
+  const [wedding, { data: eventos }] = await Promise.all([
+    getWedding(),
+    supabase
+      .from("timeline_events")
+      .select("id, hora, actividad, responsable, notas")
+      .order("hora"),
+  ]);
 
   return (
     <Agenda

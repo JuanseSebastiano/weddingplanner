@@ -5,9 +5,9 @@ import type { Item, Pago } from "@/lib/plata";
 
 export default async function PagosPage() {
   const supabase = await createClient();
-  const wedding = await getWedding();
 
-  const [{ data: pagos }, { data: items }] = await Promise.all([
+  const [wedding, { data: pagos }, { data: items }] = await Promise.all([
+    getWedding(),
     supabase
       .from("payments")
       .select(

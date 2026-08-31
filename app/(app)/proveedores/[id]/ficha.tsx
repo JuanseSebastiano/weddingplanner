@@ -54,7 +54,12 @@ export function FichaVendor({
 }: {
   vendor: Vendor;
   quotes: Quote[];
-  tareas: { id: string; titulo: string; estado: string; fecha_limite: string | null }[];
+  tareas: {
+    id: string;
+    titulo: string;
+    estado: string;
+    fecha_limite: string | null;
+  }[];
   items: {
     id: string;
     concepto: string;
@@ -122,7 +127,10 @@ export function FichaVendor({
           {vendor.contacto && <p>{vendor.contacto}</p>}
           {vendor.telefono && (
             <p>
-              <a href={`tel:${vendor.telefono}`} className="text-primary underline">
+              <a
+                href={`tel:${vendor.telefono}`}
+                className="text-primary underline"
+              >
                 {vendor.telefono}
               </a>
             </p>
@@ -218,7 +226,9 @@ export function FichaVendor({
                   )}
                   {q.excluye && (
                     <p className="text-sm">
-                      <span className="text-muted-foreground">No incluye: </span>
+                      <span className="text-muted-foreground">
+                        No incluye:{" "}
+                      </span>
                       {q.excluye}
                     </p>
                   )}
@@ -453,13 +463,7 @@ function FormQuote({
   );
 }
 
-function ArchivoQuote({
-  quote,
-  vendorId,
-}: {
-  quote: Quote;
-  vendorId: string;
-}) {
+function ArchivoQuote({ quote, vendorId }: { quote: Quote; vendorId: string }) {
   const [pendiente, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 

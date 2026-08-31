@@ -63,6 +63,11 @@ export async function borrarItem(id: string) {
 }
 
 export async function guardarCotizacionReferencia(cotizacion: number) {
+  // Se divide por este número en toda la app: no puede ser 0 ni negativo.
+  if (!Number.isFinite(cotizacion) || cotizacion <= 0) {
+    return { error: "La cotización tiene que ser mayor que cero." };
+  }
+
   const supabase = await createClient();
   const wedding = await getWedding();
 

@@ -207,7 +207,9 @@ function FormIdea({
     };
 
     startTransition(async () => {
-      const r = idea ? await actualizarIdea(idea.id, datos) : await crearIdea(datos);
+      const r = idea
+        ? await actualizarIdea(idea.id, datos)
+        : await crearIdea(datos);
       if (r.error) setError(r.error);
       else onListo();
     });
@@ -330,13 +332,7 @@ function FormIdea({
   );
 }
 
-function ImagenesIdea({
-  idea,
-  imagenes,
-}: {
-  idea: Idea;
-  imagenes: Imagen[];
-}) {
+function ImagenesIdea({ idea, imagenes }: { idea: Idea; imagenes: Imagen[] }) {
   const [pendiente, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 

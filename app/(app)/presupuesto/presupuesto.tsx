@@ -72,7 +72,10 @@ export function Presupuesto({
             </Button>
           </SheetTrigger>
           <SheetContent title="Nuevo ítem de presupuesto">
-            <FormItem vendors={vendors} onListo={() => setNuevoAbierto(false)} />
+            <FormItem
+              vendors={vendors}
+              onListo={() => setNuevoAbierto(false)}
+            />
           </SheetContent>
         </Sheet>
       </div>
@@ -329,7 +332,9 @@ function FormItem({
     };
 
     startTransition(async () => {
-      const r = item ? await actualizarItem(item.id, datos) : await crearItem(datos);
+      const r = item
+        ? await actualizarItem(item.id, datos)
+        : await crearItem(datos);
       if (r.error) setError(r.error);
       else onListo();
     });

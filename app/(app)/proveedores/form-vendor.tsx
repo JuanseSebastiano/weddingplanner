@@ -182,7 +182,8 @@ export function FormVendor({
           className="w-full text-danger"
           disabled={pendiente}
           onClick={() => {
-            if (!confirm(`¿Borrar ${vendor.nombre} y sus presupuestos?`)) return;
+            if (!confirm(`¿Borrar ${vendor.nombre} y sus presupuestos?`))
+              return;
             startTransition(async () => {
               const r = await borrarVendor(vendor.id);
               if (r.error) setError(r.error);

@@ -8,8 +8,18 @@ import type { Tarea } from "./tareas";
 
 const DIAS = ["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"];
 const MESES = [
-  "enero", "febrero", "marzo", "abril", "mayo", "junio",
-  "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+  "enero",
+  "febrero",
+  "marzo",
+  "abril",
+  "mayo",
+  "junio",
+  "julio",
+  "agosto",
+  "septiembre",
+  "octubre",
+  "noviembre",
+  "diciembre",
 ];
 
 export function CalendarioMensual({
@@ -100,7 +110,9 @@ export function CalendarioMensual({
             >
               <span className="flex items-center gap-0.5">
                 {dia}
-                {esBoda && <Heart className="h-3 w-3 fill-primary text-primary" />}
+                {esBoda && (
+                  <Heart className="h-3 w-3 fill-primary text-primary" />
+                )}
               </span>
               {delDiaTareas.length > 0 && (
                 <span

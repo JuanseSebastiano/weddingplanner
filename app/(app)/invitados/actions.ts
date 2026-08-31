@@ -59,12 +59,10 @@ export async function importarInvitados(filas: NuevoInvitado[]) {
   const supabase = await createClient();
   const wedding = await getWedding();
 
-  const { error, count } = await supabase
-    .from("guests")
-    .insert(
-      filas.map((f) => ({ ...f, wedding_id: wedding.id })),
-      { count: "exact" },
-    );
+  const { error, count } = await supabase.from("guests").insert(
+    filas.map((f) => ({ ...f, wedding_id: wedding.id })),
+    { count: "exact" },
+  );
 
   if (error) return { error: error.message };
   revalidatePath("/invitados");

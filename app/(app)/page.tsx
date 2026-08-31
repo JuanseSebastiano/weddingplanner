@@ -2,33 +2,45 @@ import Link from "next/link";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getWedding } from "@/lib/wedding";
-import { Card } from "@/components/ui/card";
 import { formatFecha, formatMonto, hoyISO, diasHasta } from "@/lib/format";
-import { agruparPorCategoria, sumar, CERO, type Item, type Pago } from "@/lib/plata";
+import {
+  agruparPorCategoria,
+  sumar,
+  CERO,
+  type Item,
+  type Pago,
+} from "@/lib/plata";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
-  const wedding = await getWedding();
 
-  const [{ data: items }, { data: pagos }, { data: guests }, { data: tasks }] =
-    await Promise.all([
-      supabase
-        .from("budget_items")
-        .select(
-          "id, categoria, concepto, monto_estimado, monto_real, moneda, vendor_id",
-        ),
-      supabase
-        .from("payments")
-        .select(
-          "id, budget_item_id, monto, moneda, cotizacion_usd, fecha, medio_pago, tipo, comprobante_path, pagado",
-        ),
-      supabase.from("guests").select("rsvp, acompanantes"),
-      supabase
-        .from("tasks")
-        .select("id, titulo, estado, fecha_limite")
-        .neq("estado", "hecha")
-        .order("fecha_limite", { nullsFirst: false }),
-    ]);
+  // Todo en paralelo: la base está en San Pablo y cada viaje de ida y vuelta
+  // se nota en el celular.
+  const [
+    wedding,
+    { data: items },
+    { data: pagos },
+    { data: guests },
+    { data: tasks },
+  ] = await Promise.all([
+    getWedding(),
+    supabase
+      .from("budget_items")
+      .select(
+        "id, categoria, concepto, monto_estimado, monto_real, moneda, vendor_id",
+      ),
+    supabase
+      .from("payments")
+      .select(
+        "id, budget_item_id, monto, moneda, cotizacion_usd, fecha, medio_pago, tipo, comprobante_path, pagado",
+      ),
+    supabase.from("guests").select("rsvp, acompanantes"),
+    supabase
+      .from("tasks")
+      .select("id, titulo, estado, fecha_limite")
+      .neq("estado", "hecha")
+      .order("fecha_limite", { nullsFirst: false }),
+  ]);
 
   const hoy = hoyISO();
   const dias = diasHasta(wedding.fecha);
@@ -71,23 +83,38 @@ export default async function DashboardPage() {
 
   return (
     <main>
-      <h1 className="text-2xl font-semibold">Nuestro casamiento</h1>
-      <p className="text-muted-foreground">
-        {formatFecha(wedding.fecha)} · {wedding.lugar}
-      </p>
-
-      <Card className="mt-3 text-center">
-        <p className="text-5xl font-semibold tabular-nums">{Math.abs(dias)}</p>
-        <p className="text-muted-foreground">
-          {dias > 0
-            ? dias === 1
-              ? "día para el casamiento"
-              : "días para el casamiento"
-            : dias === 0
-              ? "¡Es hoy!"
-              : "días desde el casamiento"}
-        </p>
-      </Card>
+      {/*
+        La foto es un background y no un <img>: si todavía no subieron
+        public/portada.jpg se ve el fondo cálido en vez de un ícono roto.
+      */}
+      <section
+        className="relative flex min-h-56 flex-col justify-end overflow-hidden rounded-2xl bg-accent bg-cover bg-center p-4"
+        style={{ backgroundImage: "url(/portada.jpg)" }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-black/10" />
+        <div className="relative text-white">
+          <h1 className="text-2xl font-semibold drop-shadow">
+            Nuestro casamiento
+          </h1>
+          <p className="text-sm text-white/85 drop-shadow">
+            {formatFecha(wedding.fecha)} · {wedding.lugar}
+          </p>
+          <p className="mt-3 flex items-baseline gap-2">
+            <span className="text-5xl font-semibold tabular-nums drop-shadow">
+              {Math.abs(dias)}
+            </span>
+            <span className="text-white/85 drop-shadow">
+              {dias > 0
+                ? dias === 1
+                  ? "día para el casamiento"
+                  : "días para el casamiento"
+                : dias === 0
+                  ? "¡es hoy!"
+                  : "días desde el casamiento"}
+            </span>
+          </p>
+        </div>
+      </section>
 
       <div className="mt-3 grid grid-cols-2 gap-3">
         <Tarjeta

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useOptimistic, useState, useTransition } from "react";
 import { Plus, AlertTriangle, Paperclip, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -177,24 +177,25 @@ export function Pagos({
   );
 }
 
+/** Se marca al instante; useOptimistic revierte solo si el guardado falla. */
 function TogglePagado({ pago }: { pago: Pago }) {
-  const [pendiente, startTransition] = useTransition();
+  const [pagado, setPagado] = useOptimistic(pago.pagado);
+  const [, startTransition] = useTransition();
 
   return (
     <button
-      aria-label={pago.pagado ? "Marcar como pendiente" : "Marcar como pagado"}
-      disabled={pendiente}
+      aria-label={pagado ? "Marcar como pendiente" : "Marcar como pagado"}
       onClick={() =>
         startTransition(async () => {
-          await actualizarPago(pago.id, { pagado: !pago.pagado });
+          setPagado(!pagado);
+          await actualizarPago(pago.id, { pagado: !pagado });
         })
       }
       className={cn(
         "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border",
-        pago.pagado
+        pagado
           ? "border-success bg-success/15 text-success"
           : "border-border text-muted-foreground",
-        pendiente && "opacity-50",
       )}
     >
       <Check className="h-4 w-4" />
@@ -315,7 +316,9 @@ function FormPago({
           step="0.01"
           inputMode="decimal"
           required={moneda === "USD"}
-          defaultValue={pago?.cotizacion_usd ?? (moneda === "USD" ? cotizacion : "")}
+          defaultValue={
+            pago?.cotizacion_usd ?? (moneda === "USD" ? cotizacion : "")
+          }
           placeholder={`Pesos por dólar (referencia: ${cotizacion})`}
           className="mt-1"
         />

@@ -110,7 +110,10 @@ export function Mesas({
                 onDrop={(e) => {
                   e.preventDefault();
                   const id = e.dataTransfer.getData("text/plain");
-                  if (id) startTransition(async () => void asignarAMesa([id], m.id));
+                  if (id)
+                    startTransition(async () => {
+                      await asignarAMesa([id], m.id);
+                    });
                 }}
                 className={cn(
                   "rounded-xl border bg-card p-3",
@@ -198,7 +201,10 @@ export function Mesas({
           onDrop={(e) => {
             e.preventDefault();
             const id = e.dataTransfer.getData("text/plain");
-            if (id) startTransition(async () => void asignarAMesa([id], null));
+            if (id)
+              startTransition(async () => {
+                await asignarAMesa([id], null);
+              });
           }}
         >
           <h2 className="font-medium">Sin mesa ({sinMesa.length})</h2>

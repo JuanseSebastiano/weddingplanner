@@ -4,14 +4,16 @@ import { Comparador, type QuoteConVendor } from "./comparador";
 
 export default async function ComparadorPage() {
   const supabase = await createClient();
-  const wedding = await getWedding();
 
-  const { data } = await supabase
-    .from("quotes")
-    .select(
-      "id, monto, moneda, incluye, excluye, valido_hasta, estado, vendors(id, nombre, rubro, rating, estado)",
-    )
-    .order("monto");
+  const [wedding, { data }] = await Promise.all([
+    getWedding(),
+    supabase
+      .from("quotes")
+      .select(
+        "id, monto, moneda, incluye, excluye, valido_hasta, estado, vendors(id, nombre, rubro, rating, estado)",
+      )
+      .order("monto"),
+  ]);
 
   return (
     <Comparador

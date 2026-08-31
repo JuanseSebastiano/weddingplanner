@@ -4,7 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { Select } from "@/components/ui/select";
-import { formatFecha, formatMonto, RUBRO_LABEL, type Rubro } from "@/lib/format";
+import {
+  formatFecha,
+  formatMonto,
+  RUBRO_LABEL,
+  type Rubro,
+} from "@/lib/format";
 import { enAmbas } from "@/lib/plata";
 
 export type QuoteConVendor = {

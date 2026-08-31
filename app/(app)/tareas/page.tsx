@@ -4,10 +4,10 @@ import { Tareas, type Tarea } from "./tareas";
 
 export default async function TareasPage() {
   const supabase = await createClient();
-  const wedding = await getWedding();
 
-  const [{ data: tasks }, { data: vendors }, { data: miembros }] =
+  const [wedding, { data: tasks }, { data: vendors }, { data: miembros }] =
     await Promise.all([
+      getWedding(),
       supabase
         .from("tasks")
         .select(

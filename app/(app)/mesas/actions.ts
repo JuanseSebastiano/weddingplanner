@@ -18,7 +18,10 @@ export async function crearMesa(datos: {
 
   if (error) {
     return {
-      error: error.code === "23505" ? "Ya existe una mesa con ese número." : error.message,
+      error:
+        error.code === "23505"
+          ? "Ya existe una mesa con ese número."
+          : error.message,
     };
   }
   revalidatePath("/mesas");
@@ -34,7 +37,10 @@ export async function actualizarMesa(
 
   if (error) {
     return {
-      error: error.code === "23505" ? "Ya existe una mesa con ese número." : error.message,
+      error:
+        error.code === "23505"
+          ? "Ya existe una mesa con ese número."
+          : error.message,
     };
   }
   revalidatePath("/mesas");

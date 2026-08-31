@@ -78,7 +78,10 @@ export async function borrarImagenIdea(documentId: string, path: string) {
   const supabase = await createClient();
 
   await supabase.storage.from("files").remove([path]);
-  const { error } = await supabase.from("documents").delete().eq("id", documentId);
+  const { error } = await supabase
+    .from("documents")
+    .delete()
+    .eq("id", documentId);
 
   if (error) return { error: error.message };
   revalidatePath("/ideas");

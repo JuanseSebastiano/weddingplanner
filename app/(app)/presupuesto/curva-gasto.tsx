@@ -22,7 +22,10 @@ export function CurvaGasto({
   return (
     <div className="mt-2 h-56 w-full rounded-xl border border-border bg-card p-2 pr-3">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={datos} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+        <LineChart
+          data={datos}
+          margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
+        >
           <CartesianGrid stroke="var(--border)" vertical={false} />
           <XAxis
             dataKey="fecha"

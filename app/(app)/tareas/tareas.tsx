@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
 import { Plus, Check, ListChecks, CalendarDays, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,13 @@ import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { formatFecha, hoyISO, RUBROS, RUBRO_LABEL, type Rubro } from "@/lib/format";
+import {
+  formatFecha,
+  hoyISO,
+  RUBROS,
+  RUBRO_LABEL,
+  type Rubro,
+} from "@/lib/format";
 import {
   crearTarea,
   actualizarTarea,
@@ -35,7 +41,9 @@ export function Tareas({
   miembros: { nombre: string; rol: string }[];
   fechaBoda: string;
 }) {
-  const [vista, setVista] = useState<"lista" | "semana" | "calendario">("lista");
+  const [vista, setVista] = useState<"lista" | "semana" | "calendario">(
+    "lista",
+  );
   const [responsable, setResponsable] = useState("");
   const [categoria, setCategoria] = useState("");
   const [estado, setEstado] = useState("pendientes");
@@ -115,7 +123,9 @@ export function Tareas({
             onClick={() => setVista(v)}
             className={cn(
               "flex flex-1 items-center justify-center gap-1.5 rounded-md py-2 text-sm",
-              vista === v ? "bg-card font-medium shadow-sm" : "text-muted-foreground",
+              vista === v
+                ? "bg-card font-medium shadow-sm"
+                : "text-muted-foreground",
             )}
           >
             <Icon className="h-4 w-4" />
@@ -256,28 +266,28 @@ export function Tareas({
   );
 }
 
+/** Se marca al instante; useOptimistic revierte solo si el guardado falla. */
 function ToggleHecha({ tarea }: { tarea: Tarea }) {
-  const [pendiente, startTransition] = useTransition();
+  const [estado, setEstado] = useOptimistic(tarea.estado);
+  const [, startTransition] = useTransition();
 
   return (
     <button
       aria-label={
-        tarea.estado === "hecha" ? "Marcar como pendiente" : "Marcar como hecha"
+        estado === "hecha" ? "Marcar como pendiente" : "Marcar como hecha"
       }
-      disabled={pendiente}
       onClick={() =>
         startTransition(async () => {
-          await actualizarTarea(tarea.id, {
-            estado: tarea.estado === "hecha" ? "pendiente" : "hecha",
-          });
+          const nuevo = estado === "hecha" ? "pendiente" : "hecha";
+          setEstado(nuevo);
+          await actualizarTarea(tarea.id, { estado: nuevo });
         })
       }
       className={cn(
         "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border",
-        tarea.estado === "hecha"
+        estado === "hecha"
           ? "border-success bg-success/15 text-success"
           : "border-border text-muted-foreground",
-        pendiente && "opacity-50",
       )}
     >
       <Check className="h-4 w-4" />

@@ -5,10 +5,10 @@ import type { Item, Pago } from "@/lib/plata";
 
 export default async function PresupuestoPage() {
   const supabase = await createClient();
-  const wedding = await getWedding();
 
-  const [{ data: items }, { data: pagos }, { data: vendors }] =
+  const [wedding, { data: items }, { data: pagos }, { data: vendors }] =
     await Promise.all([
+      getWedding(),
       supabase
         .from("budget_items")
         .select(
