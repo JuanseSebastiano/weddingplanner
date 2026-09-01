@@ -1,5 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { AlertTriangle, ChevronRight, CalendarDays, Clock } from "lucide-react";
+import portada from "@/public/portada.jpg";
 import { createClient } from "@/lib/supabase/server";
 import { getWedding } from "@/lib/wedding";
 import { Card, CardTitle, Eyebrow } from "@/components/ui/card";
@@ -133,7 +135,7 @@ export default async function DashboardPage() {
   return (
     <main className="flex flex-col gap-5">
       {/* ---------- HERO ---------- */}
-      <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-card lg:flex">
+      <section className="flex flex-col-reverse overflow-hidden rounded-2xl border border-border bg-card shadow-card lg:flex-row">
         <div className="flex-1 bg-gradient-to-b from-card to-[#fdf8f3] p-5 lg:p-7">
           <Eyebrow>Faltan</Eyebrow>
           <p className="mt-0.5 flex items-baseline gap-2.5">
@@ -174,14 +176,20 @@ export default async function DashboardPage() {
         </div>
 
         {/*
-          La foto va de fondo y no como <img>: si todavía no subieron
-          public/portada.jpg se ve el degradé en vez de un ícono roto.
+          next/image recorta y comprime según el dispositivo: la foto original
+          pesa cientos de KB y así llegan unas decenas.
         */}
-        <div
-          className="hidden h-40 bg-[linear-gradient(120deg,#C9CBB6_0%,#D9D2C2_55%,#E4DACB_100%)] bg-cover bg-center sm:block lg:h-auto lg:w-[38%] lg:shrink-0"
-          style={{ backgroundImage: "url(/portada.jpg)" }}
-          role="presentation"
-        />
+        <div className="relative h-40 shrink-0 sm:h-48 lg:h-auto lg:w-[38%]">
+          <Image
+            src={portada}
+            alt="El lugar del casamiento"
+            fill
+            sizes="(min-width: 1024px) 38vw, 100vw"
+            placeholder="blur"
+            priority
+            className="object-cover"
+          />
+        </div>
       </section>
 
       {vacio && (
