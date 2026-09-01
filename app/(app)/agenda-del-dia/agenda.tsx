@@ -37,7 +37,9 @@ export function Agenda({
   return (
     <main>
       <div className="no-print flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Agenda del día</h1>
+        <h1 className="font-serif text-2xl font-normal lg:text-[28px]">
+          Agenda del día
+        </h1>
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -67,8 +69,10 @@ export function Agenda({
       </header>
 
       {eventos.length === 0 ? (
-        <div className="no-print mt-6 rounded-xl border border-dashed border-border p-6 text-center">
-          <p className="font-medium">Todavía no armaron el cronograma</p>
+        <div className="no-print mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
+          <p className="font-serif text-lg font-normal">
+            Todavía no armaron el cronograma
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
             Cargá las horas clave del día: llegada del fotógrafo, ceremonia,
             cóctel, entrada al salón, vals, torta, carnaval carioca. Después lo

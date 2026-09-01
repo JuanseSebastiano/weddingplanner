@@ -65,9 +65,9 @@ export function CurvaGasto({
           <Line
             type="monotone"
             dataKey="acumulado"
-            stroke="#c35141"
+            stroke="var(--data)"
             strokeWidth={2}
-            dot={{ r: 3, fill: "#c35141" }}
+            dot={{ r: 3, fill: "var(--data)" }}
             activeDot={{ r: 5 }}
           />
         </LineChart>

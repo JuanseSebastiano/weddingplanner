@@ -54,7 +54,9 @@ export function Pagos({
   return (
     <main>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Pagos</h1>
+        <h1 className="font-serif text-2xl font-normal lg:text-[28px]">
+          Pagos
+        </h1>
         <Sheet open={nuevoAbierto} onOpenChange={setNuevoAbierto}>
           <SheetTrigger asChild>
             <Button size="sm" disabled={items.length === 0}>
@@ -72,7 +74,7 @@ export function Pagos({
       </div>
 
       {proximos.length > 0 && (
-        <section className="mt-3 rounded-xl border border-warning bg-warning/10 p-3">
+        <section className="mt-3 rounded-2xl border border-warning/40 bg-warning-soft p-3.5">
           <h2 className="flex items-center gap-1.5 font-medium">
             <AlertTriangle className="h-4 w-4" />
             {proximos.length === 1
@@ -98,16 +100,18 @@ export function Pagos({
       )}
 
       {items.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-border p-6 text-center">
-          <p className="font-medium">Primero cargá ítems de presupuesto</p>
+        <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
+          <p className="font-serif text-lg font-normal">
+            Primero cargá ítems de presupuesto
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
             Cada pago se imputa a un ítem (salón, catering…). Creá uno en
             Presupuesto y volvé acá.
           </p>
         </div>
       ) : pagos.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-border p-6 text-center">
-          <p className="font-medium">Todavía no hay pagos</p>
+        <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
+          <p className="font-serif text-lg font-normal">Todavía no hay pagos</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Cargá las señas y cuotas que ya hicieron, y también las que vienen:
             si las dejás sin marcar como pagadas, aparecen como vencimientos.
@@ -120,7 +124,7 @@ export function Pagos({
               <h2 className="text-sm font-medium text-muted-foreground">
                 {formatFecha(`${mes}-01`).slice(3)}
               </h2>
-              <ul className="mt-1 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+              <ul className="mt-1 divide-y divide-border-soft overflow-hidden rounded-2xl border border-border bg-card shadow-card">
                 {delMes.map((p) => {
                   const par = pagoEnAmbas(p, cotizacion);
                   return (
@@ -194,7 +198,7 @@ function TogglePagado({ pago }: { pago: Pago }) {
       className={cn(
         "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border",
         pagado
-          ? "border-success bg-success/15 text-success"
+          ? "border-success bg-success-soft text-success"
           : "border-border text-muted-foreground",
       )}
     >

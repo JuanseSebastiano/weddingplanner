@@ -65,7 +65,7 @@ export function CalendarioMensual({
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <p className="font-medium">
+        <p className="font-serif text-lg font-normal">
           {MESES[m - 1]} de {anio}
         </p>
         <button
@@ -133,13 +133,15 @@ export function CalendarioMensual({
 
       {diaElegido && (
         <section className="mt-4">
-          <h2 className="font-medium">{formatFecha(diaElegido)}</h2>
+          <h2 className="font-serif text-lg font-normal">
+            {formatFecha(diaElegido)}
+          </h2>
           {tareasDelDia.length === 0 ? (
             <p className="mt-1 text-sm text-muted-foreground">
               No hay tareas con vencimiento ese día.
             </p>
           ) : (
-            <ul className="mt-2 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+            <ul className="mt-2 divide-y divide-border-soft overflow-hidden rounded-2xl border border-border bg-card shadow-card">
               {tareasDelDia.map((t) => (
                 <li key={t.id}>
                   <button

@@ -32,9 +32,9 @@ const ESTADO_LABEL = {
 
 const ESTADO_COLOR = {
   idea: "bg-muted text-muted-foreground",
-  evaluando: "bg-warning/15 text-warning",
-  aprobada: "bg-success/15 text-success",
-  descartada: "bg-danger/10 text-danger",
+  evaluando: "bg-warning-soft text-warning",
+  aprobada: "bg-success-soft text-success",
+  descartada: "bg-danger-soft text-danger",
 } as const;
 
 export function Ideas({
@@ -58,7 +58,9 @@ export function Ideas({
   return (
     <main>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Ideas</h1>
+        <h1 className="font-serif text-2xl font-normal lg:text-[28px]">
+          Ideas
+        </h1>
         <Sheet open={nuevaAbierta} onOpenChange={setNuevaAbierta}>
           <SheetTrigger asChild>
             <Button size="sm">
@@ -101,8 +103,10 @@ export function Ideas({
       )}
 
       {ideas.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-border p-6 text-center">
-          <p className="font-medium">Todavía no guardaron ninguna idea</p>
+        <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
+          <p className="font-serif text-lg font-normal">
+            Todavía no guardaron ninguna idea
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
             Este es el lugar para las fotos y los links que hoy se mandan por
             WhatsApp: centros de mesa, vestidos, souvenirs. Después las marcan
@@ -120,7 +124,7 @@ export function Ideas({
             return (
               <li
                 key={idea.id}
-                className="overflow-hidden rounded-xl border border-border bg-card"
+                className="overflow-hidden rounded-2xl border border-border bg-card shadow-card"
               >
                 <button
                   onClick={() => setEditando(idea)}

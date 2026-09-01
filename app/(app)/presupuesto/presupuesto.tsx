@@ -64,7 +64,9 @@ export function Presupuesto({
   return (
     <main>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Presupuesto</h1>
+        <h1 className="font-serif text-2xl font-normal lg:text-[28px]">
+          Presupuesto
+        </h1>
         <Sheet open={nuevoAbierto} onOpenChange={setNuevoAbierto}>
           <SheetTrigger asChild>
             <Button size="sm">
@@ -92,7 +94,7 @@ export function Presupuesto({
 
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-[#c35141]"
+            className="h-full rounded-full bg-data"
             style={{ width: `${Math.min(100, usado * 100)}%` }}
           />
         </div>
@@ -119,7 +121,7 @@ export function Presupuesto({
         </dl>
 
         {sePasaDelObjetivo && (
-          <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-danger/10 p-2 text-sm text-danger">
+          <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-danger-soft p-2.5 text-sm text-danger">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
             Lo previsto supera el objetivo por{" "}
             {formatMonto(totalPrevisto.usd - objetivoUSD, "USD")}.
@@ -131,7 +133,7 @@ export function Presupuesto({
 
       {serie.length > 1 && (
         <section className="mt-4">
-          <h2 className="font-medium">Gasto acumulado</h2>
+          <h2 className="font-serif text-lg font-normal">Gasto acumulado</h2>
           <p className="text-sm text-muted-foreground">
             Total pagado a lo largo del tiempo, en dólares.
           </p>
@@ -140,11 +142,13 @@ export function Presupuesto({
       )}
 
       <section className="mt-6">
-        <h2 className="font-medium">Por categoría</h2>
+        <h2 className="font-serif text-lg font-normal">Por categoría</h2>
 
         {categorias.length === 0 ? (
-          <div className="mt-2 rounded-xl border border-dashed border-border p-6 text-center">
-            <p className="font-medium">Todavía no hay ítems cargados</p>
+          <div className="mt-2 rounded-2xl border border-dashed border-border p-6 text-center">
+            <p className="font-serif text-lg font-normal">
+              Todavía no hay ítems cargados
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
               Agregá el primero con el botón “Ítem”: por ejemplo salón, catering
               o fotografía, con lo que estiman gastar.
@@ -155,7 +159,7 @@ export function Presupuesto({
             {categorias.map((c) => (
               <li
                 key={c.categoria}
-                className="overflow-hidden rounded-xl border border-border bg-card"
+                className="overflow-hidden rounded-2xl border border-border bg-card shadow-card"
               >
                 <button
                   onClick={() =>
@@ -180,7 +184,7 @@ export function Presupuesto({
 
                   <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full rounded-full bg-[#c35141]"
+                      className="h-full rounded-full bg-data"
                       style={{
                         width: `${(c.previsto.usd / maxCategoria) * 100}%`,
                       }}
@@ -203,7 +207,7 @@ export function Presupuesto({
                 </button>
 
                 {abierta === c.categoria && (
-                  <ul className="divide-y divide-border border-t border-border">
+                  <ul className="divide-y divide-border-soft border-t border-border">
                     {c.items.map(({ item, previsto, pagado, excedido }) => (
                       <li
                         key={item.id}
@@ -247,10 +251,12 @@ export function Presupuesto({
 
       <Link
         href="/pagos"
-        className="mt-4 flex items-center justify-between rounded-xl border border-border bg-card p-4"
+        className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-card shadow-card p-4"
       >
         <span>
-          <span className="font-medium">Pagos y vencimientos</span>
+          <span className="font-serif text-lg font-normal">
+            Pagos y vencimientos
+          </span>
           <span className="block text-sm text-muted-foreground">
             {pagos.length} movimientos cargados
           </span>

@@ -84,7 +84,9 @@ export function FichaVendor({
 
       <div className="mt-2 flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold">{vendor.nombre}</h1>
+          <h1 className="font-serif text-2xl font-normal lg:text-[28px]">
+            {vendor.nombre}
+          </h1>
           <p className="text-muted-foreground">
             {RUBRO_LABEL[vendor.rubro]} · {ESTADO_VENDOR[vendor.estado]}
           </p>
@@ -156,7 +158,7 @@ export function FichaVendor({
 
       {vendor.notas && (
         <section className="mt-3">
-          <h2 className="font-medium">Historial y notas</h2>
+          <h2 className="font-serif text-lg font-normal">Historial y notas</h2>
           <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">
             {vendor.notas}
           </p>
@@ -165,7 +167,7 @@ export function FichaVendor({
 
       <section className="mt-5">
         <div className="flex items-center justify-between">
-          <h2 className="font-medium">Presupuestos</h2>
+          <h2 className="font-serif text-lg font-normal">Presupuestos</h2>
           <Sheet open={nuevoQuote} onOpenChange={setNuevoQuote}>
             <SheetTrigger asChild>
               <Button variant="outline" size="sm">
@@ -193,7 +195,7 @@ export function FichaVendor({
               return (
                 <li
                   key={q.id}
-                  className="rounded-xl border border-border bg-card p-3"
+                  className="rounded-2xl border border-border bg-card shadow-card p-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -242,8 +244,8 @@ export function FichaVendor({
 
       {items.length > 0 && (
         <section className="mt-5">
-          <h2 className="font-medium">En el presupuesto</h2>
-          <ul className="mt-1 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+          <h2 className="font-serif text-lg font-normal">En el presupuesto</h2>
+          <ul className="mt-1 divide-y divide-border-soft overflow-hidden rounded-2xl border border-border bg-card shadow-card">
             {items.map((i) => (
               <li key={i.id} className="flex justify-between gap-2 px-3 py-2.5">
                 <span className="truncate">{i.concepto}</span>
@@ -258,8 +260,10 @@ export function FichaVendor({
 
       {tareas.length > 0 && (
         <section className="mt-5">
-          <h2 className="font-medium">Tareas relacionadas</h2>
-          <ul className="mt-1 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+          <h2 className="font-serif text-lg font-normal">
+            Tareas relacionadas
+          </h2>
+          <ul className="mt-1 divide-y divide-border-soft overflow-hidden rounded-2xl border border-border bg-card shadow-card">
             {tareas.map((t) => (
               <li key={t.id} className="flex justify-between gap-2 px-3 py-2.5">
                 <span className="truncate">{t.titulo}</span>

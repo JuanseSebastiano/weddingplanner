@@ -33,23 +33,29 @@ export default async function ProveedoresPage() {
   return (
     <main>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Proveedores</h1>
+        <h1 className="font-serif text-2xl font-normal lg:text-[28px]">
+          Proveedores
+        </h1>
         <NuevoVendor />
       </div>
 
       <Link
         href="/comparador"
-        className="mt-3 block rounded-xl border border-border bg-card p-3"
+        className="mt-3 block rounded-2xl border border-border bg-card shadow-card p-3"
       >
-        <span className="font-medium">Comparar presupuestos</span>
+        <span className="font-serif text-lg font-normal">
+          Comparar presupuestos
+        </span>
         <span className="block text-sm text-muted-foreground">
           Lado a lado, dentro de un mismo rubro
         </span>
       </Link>
 
       {lista.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-border p-6 text-center">
-          <p className="font-medium">Todavía no hay proveedores</p>
+        <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
+          <p className="font-serif text-lg font-normal">
+            Todavía no hay proveedores
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
             Cargá cada salón, fotógrafo o DJ con el que hablen, aunque sea sólo
             el nombre y el Instagram. Después les vas sumando los presupuestos.
@@ -62,7 +68,7 @@ export default async function ProveedoresPage() {
               <h2 className="text-sm font-medium text-muted-foreground">
                 {RUBRO_LABEL[rubro]}
               </h2>
-              <ul className="mt-1 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+              <ul className="mt-1 divide-y divide-border-soft overflow-hidden rounded-2xl border border-border bg-card shadow-card">
                 {lista
                   .filter((v) => v.rubro === rubro)
                   .map((v) => (

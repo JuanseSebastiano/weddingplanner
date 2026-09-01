@@ -62,7 +62,9 @@ export function Mesas({
   return (
     <main className="pb-20">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Mesas</h1>
+        <h1 className="font-serif text-2xl font-normal lg:text-[28px]">
+          Mesas
+        </h1>
         <Sheet open={nuevaAbierta} onOpenChange={setNuevaAbierta}>
           <SheetTrigger asChild>
             <Button size="sm">
@@ -89,8 +91,8 @@ export function Mesas({
       </p>
 
       {mesas.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-border p-6 text-center">
-          <p className="font-medium">Todavía no hay mesas</p>
+        <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
+          <p className="font-serif text-lg font-normal">Todavía no hay mesas</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Creá la primera con el botón “Mesa”. Después tocá invitados de la
             lista de abajo y asignalos.
@@ -116,13 +118,13 @@ export function Mesas({
                     });
                 }}
                 className={cn(
-                  "rounded-xl border bg-card p-3",
+                  "rounded-2xl border bg-card p-3.5 shadow-card",
                   excedida ? "border-danger" : "border-border",
                 )}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">
+                    <p className="font-serif text-lg font-normal">
                       Mesa {m.numero}
                       {m.ubicacion && (
                         <span className="font-normal text-muted-foreground">
@@ -207,7 +209,9 @@ export function Mesas({
               });
           }}
         >
-          <h2 className="font-medium">Sin mesa ({sinMesa.length})</h2>
+          <h2 className="font-serif text-lg font-normal">
+            Sin mesa ({sinMesa.length})
+          </h2>
           <p className="text-sm text-muted-foreground">
             Tocá los que quieras y elegí una mesa arriba.
           </p>

@@ -48,15 +48,19 @@ export function Comparador({
 
   return (
     <main>
-      <h1 className="text-2xl font-semibold">Comparador</h1>
+      <h1 className="font-serif text-2xl font-normal lg:text-[28px]">
+        Comparador
+      </h1>
       <p className="text-sm text-muted-foreground">
         Presupuestos del mismo rubro, lado a lado. Los montos se normalizan a
         dólares para poder compararlos.
       </p>
 
       {quotes.length === 0 ? (
-        <div className="mt-6 rounded-xl border border-dashed border-border p-6 text-center">
-          <p className="font-medium">Todavía no hay presupuestos cargados</p>
+        <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
+          <p className="font-serif text-lg font-normal">
+            Todavía no hay presupuestos cargados
+          </p>
           <p className="mt-1 text-sm text-muted-foreground">
             Cargá al menos dos del mismo rubro desde la ficha de cada{" "}
             <Link href="/proveedores" className="text-primary underline">
@@ -92,7 +96,7 @@ export function Comparador({
               {delRubro.map((q) => (
                 <article
                   key={q.id}
-                  className="w-64 shrink-0 rounded-xl border border-border bg-card p-3"
+                  className="w-64 shrink-0 rounded-2xl border border-border bg-card shadow-card p-3"
                 >
                   <Link
                     href={`/proveedores/${q.vendors.id}`}

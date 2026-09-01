@@ -28,9 +28,9 @@ export default async function MasPage() {
 
   return (
     <main>
-      <h1 className="text-2xl font-semibold">Más</h1>
+      <h1 className="font-serif text-2xl font-normal lg:text-[28px]">Más</h1>
 
-      <ul className="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+      <ul className="mt-4 divide-y divide-border-soft overflow-hidden rounded-2xl border border-border bg-card shadow-card">
         {LINKS.map(({ href, label }) => (
           <li key={href}>
             <Link

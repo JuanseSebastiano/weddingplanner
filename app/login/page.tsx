@@ -42,13 +42,15 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center px-5">
-      <h1 className="text-3xl font-semibold">Nuestro casamiento</h1>
+      <h1 className="font-serif text-4xl font-normal leading-tight">
+        Nuestro casamiento
+      </h1>
       <p className="mt-2 mb-8 text-muted-foreground">
         Entrá con tu email y te mandamos un link de acceso.
       </p>
 
       {estado === "enviado" ? (
-        <div className="rounded-xl border border-border bg-card p-4">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
           <p className="font-medium">Listo, revisá tu correo</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Te mandamos un link a {email}. Abrilo desde este mismo celular.

@@ -85,7 +85,9 @@ export function Tareas({
   return (
     <main>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Tareas</h1>
+        <h1 className="font-serif text-2xl font-normal lg:text-[28px]">
+          Tareas
+        </h1>
         <Sheet open={nuevaAbierta} onOpenChange={setNuevaAbierta}>
           <SheetTrigger asChild>
             <Button size="sm">
@@ -185,7 +187,7 @@ export function Tareas({
                 : "Ninguna tarea coincide con esos filtros."}
             </p>
           ) : (
-            <ul className="mt-3 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+            <ul className="mt-3 divide-y divide-border-soft overflow-hidden rounded-2xl border border-border bg-card shadow-card">
               {filtradas.map((t) => (
                 <li key={t.id} className="flex items-center gap-2 pl-2 pr-3">
                   <ToggleHecha tarea={t} />
@@ -235,10 +237,12 @@ export function Tareas({
 
       <Link
         href="/agenda-del-dia"
-        className="mt-4 flex items-center justify-between rounded-xl border border-border bg-card p-4"
+        className="mt-4 flex items-center justify-between rounded-2xl border border-border bg-card shadow-card p-4"
       >
         <span>
-          <span className="font-medium">Agenda del día del evento</span>
+          <span className="font-serif text-lg font-normal">
+            Agenda del día del evento
+          </span>
           <span className="block text-sm text-muted-foreground">
             Cronograma hora por hora, imprimible
           </span>
@@ -286,7 +290,7 @@ function ToggleHecha({ tarea }: { tarea: Tarea }) {
       className={cn(
         "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border",
         estado === "hecha"
-          ? "border-success bg-success/15 text-success"
+          ? "border-success bg-success-soft text-success"
           : "border-border text-muted-foreground",
       )}
     >
@@ -336,8 +340,8 @@ function SembrarChecklist({ compacto }: { compacto?: boolean }) {
   }
 
   return (
-    <div className="mt-6 rounded-xl border border-dashed border-border p-6 text-center">
-      <p className="font-medium">Todavía no hay tareas</p>
+    <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
+      <p className="font-serif text-lg font-normal">Todavía no hay tareas</p>
       <p className="mt-1 mb-4 text-sm text-muted-foreground">
         Podemos armarles el checklist típico de casamiento, con las fechas
         calculadas para atrás desde el día del evento. Después lo editan como
