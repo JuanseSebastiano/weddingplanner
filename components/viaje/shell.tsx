@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, type ReactNode } from 'react'
+import Link from 'next/link'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from './db'
 import { startSync, subscribeSync, type SyncState } from './sync'
@@ -69,10 +70,13 @@ export function ViajeShell({ children }: { children: ReactNode }) {
             <div className="text-sm text-muted-foreground">{fmtRange(trip.inicio, trip.fin)}</div>
           )}
         </div>
-        <span
-          className={`shrink-0 text-xs ${sync.status === 'offline' || sync.status === 'error' ? 'text-warning' : 'text-subtle'}`}
-        >
-          {estado}
+        <span className="flex shrink-0 flex-col items-end gap-0.5 text-xs">
+          <span className={sync.status === 'offline' || sync.status === 'error' ? 'text-warning' : 'text-subtle'}>
+            {estado}
+          </span>
+          <Link href="/viaje/importar" className="text-subtle underline">
+            Importar respaldo
+          </Link>
         </span>
       </div>
       {children}

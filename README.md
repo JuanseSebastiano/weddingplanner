@@ -94,6 +94,29 @@ gastos (`components/viaje/`). Funciona sin red:
 
 Toda la app es instalable (`app/manifest.ts`).
 
+## Migración de datos desde las apps viejas
+
+**Finanzas** (proyecto Supabase de Nuestras Finanzas → tablas `fin_*`):
+
+```bash
+OLD_SUPABASE_URL=... OLD_SUPABASE_SERVICE_ROLE_KEY=... \
+NEW_SUPABASE_URL=... NEW_SUPABASE_SERVICE_ROLE_KEY=... \
+COUPLE_ID=11111111-1111-1111-1111-111111111111 \
+node scripts/migrar-finanzas.mjs          # dry-run: conteo por tabla, no escribe
+node scripts/migrar-finanzas.mjs --apply  # escribe
+```
+
+Empareja usuarios por email con `couple_members`, conserva los ids (correrlo
+dos veces no duplica), reutiliza los rubros que ya existen y no escribe nada
+si encuentra un problema. Las credenciales de Gmail se copian cifradas: el
+proyecto nuevo tiene que usar el mismo `GMAIL_TOKEN_ENCRYPTION_KEY`.
+
+**Viaje** (Luna de Miel guarda todo en el teléfono): en la app vieja,
+💾 → Exportar respaldo; en la nueva, `/viaje/importar`. Muestra primero qué
+entra por tabla y recién con "Importar" escribe. Solo importa en un viaje
+vacío. Los precios en texto se convierten a monto y moneda (euros a dólares
+con la cotización que se indica); lo ilegible queda en notas.
+
 ## Setup local
 
 ```bash
