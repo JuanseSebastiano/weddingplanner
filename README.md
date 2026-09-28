@@ -62,6 +62,24 @@ al cierre anterior si todavía no.
 npm test   # tests de parsers, reglas, balance, presupuestos y cartera
 ```
 
+## Viaje (`/viaje`)
+
+Portado de Luna de Miel: itinerario, vuelos, trenes, reservas, crucero y
+gastos (`components/viaje/`). Funciona sin red:
+
+- Los datos se leen de IndexedDB (Dexie) en el dispositivo.
+- Cada cambio local queda en un outbox y `components/viaje/sync.ts` lo sube
+  a las tablas `trip_*` apenas hay conexión; después baja lo que cambió en
+  el servidor desde el último `updated_at`. Los borrados son lógicos
+  (`deleted_at`) para que lleguen a los otros dispositivos.
+- El service worker (`public/sw.js`) guarda las secciones del viaje con sus
+  scripts, así abren offline aunque no se hayan visitado.
+- Lo que tiene precio guarda monto, moneda (ARS/USD), cotización, si está
+  pagado y cuándo vence. Un monto en euros se guarda convertido a dólares con
+  la cotización ingresada, y el original queda en las notas.
+
+Toda la app es instalable (`app/manifest.ts`).
+
 ## Setup local
 
 ```bash
@@ -96,6 +114,7 @@ Están versionadas en `supabase/migrations/` y se aplican en orden:
 | `0005_open_access.sql` | Saca el login: las policies quedan abiertas a `anon` |
 | `0006_couples.sql` | `couples`/`couple_members`, prefijo `wedding_` en las tablas, `couple_id` en todas y RLS por pareja (revierte 0005) |
 | `0007_finanzas.sql` | Tablas `fin_*`, RLS por pareja, rubros por defecto y vistas del disponible real |
+| `0008_viaje.sql` | Tablas `trip_*` con id uuid, `updated_at` del servidor, `deleted_at` y RLS por pareja |
 
 Con la CLI de Supabase, contra el proyecto remoto:
 

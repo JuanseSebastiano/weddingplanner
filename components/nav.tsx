@@ -44,9 +44,19 @@ const SECCIONES_FINANZAS = [
   { href: "/finanzas/configuracion", label: "Configuración" },
 ];
 
+const SECCIONES_VIAJE = [
+  { href: "/viaje", label: "Itinerario" },
+  { href: "/viaje/vuelos", label: "Vuelos" },
+  { href: "/viaje/trenes", label: "Trenes" },
+  { href: "/viaje/reservas", label: "Reservas" },
+  { href: "/viaje/crucero", label: "Crucero" },
+  { href: "/viaje/gastos", label: "Gastos" },
+];
+
 const SECCIONES: Record<string, { href: string; label: string }[]> = {
   "/boda": SECCIONES_BODA,
   "/finanzas": SECCIONES_FINANZAS,
+  "/viaje": SECCIONES_VIAJE,
 };
 
 function esActiva(pathname: string, href: string, exacta = false) {
@@ -161,7 +171,7 @@ export function BottomNav() {
 }
 
 /** Tira de secciones de un módulo, sólo en celular (en escritorio están en el lateral). */
-export function ModuloTabs({ modulo }: { modulo: "/boda" | "/finanzas" }) {
+export function ModuloTabs({ modulo }: { modulo: "/boda" | "/finanzas" | "/viaje" }) {
   const pathname = usePathname();
 
   return (
