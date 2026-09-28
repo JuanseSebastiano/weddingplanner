@@ -16,8 +16,8 @@ const serif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Nuestro casamiento",
-  description: "Organización del casamiento",
+  title: "Nosotros",
+  description: "Boda, finanzas y viaje",
 };
 
 export const viewport: Viewport = {

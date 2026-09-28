@@ -10,24 +10,27 @@ objetivo USD 10.000 · ~100 invitados.
 **Stack:** Next.js 16 (App Router, TypeScript, Server Actions) · Supabase
 (Postgres, Storage) · Tailwind CSS v4 · Vercel.
 
-**Acceso:** sin login — quien tenga el link entra directo y puede ver y
-editar todo. No hay barrera de autenticación; el único control es no
-compartir la URL.
+**Acceso:** login con email y contraseña (Supabase Auth). Cada usuario
+pertenece a una pareja (`couple_members`) y RLS limita todo a los datos de su
+pareja.
+
+**Estructura:** una sola app con módulos `/` (inicio), `/boda`, `/finanzas` y
+`/viaje`. Navegación inferior en celular y lateral en escritorio.
 
 ## Módulos
 
 | Ruta | Qué hace |
 | --- | --- |
-| `/` | Cuenta regresiva y tarjetas de presupuesto, invitados, tareas y próximos pagos, todas clickeables |
-| `/invitados` | Alta rápida, importación pegando planilla o CSV, filtros, contadores y export a CSV |
-| `/mesas` | Armado de mesas con capacidad, drag-and-drop en escritorio y selección múltiple en celular |
-| `/presupuesto` | Estimado vs real vs pagado vs pendiente por categoría, en ARS y USD, con curva de gasto |
-| `/pagos` | Señas y cuotas, cotización usada por pago, vencimientos a 30 días y comprobantes |
-| `/tareas` | Lista, "esta semana" y calendario mensual, más el checklist estándar retrocalculado |
-| `/agenda-del-dia` | Cronograma hora por hora del evento, imprimible o guardable en PDF |
-| `/proveedores` | Fichas por rubro con contacto, puntaje, notas y presupuestos adjuntos |
-| `/comparador` | Presupuestos del mismo rubro lado a lado, normalizados a dólares |
-| `/ideas` | Galería de fotos y links con estado (idea, evaluando, aprobada, descartada) |
+| `/boda` | Cuenta regresiva y tarjetas de presupuesto, invitados, tareas y próximos pagos, todas clickeables |
+| `/boda/invitados` | Alta rápida, importación pegando planilla o CSV, filtros, contadores y export a CSV |
+| `/boda/mesas` | Armado de mesas con capacidad, drag-and-drop en escritorio y selección múltiple en celular |
+| `/boda/presupuesto` | Estimado vs real vs pagado vs pendiente por categoría, en ARS y USD, con curva de gasto |
+| `/boda/pagos` | Señas y cuotas, cotización usada por pago, vencimientos a 30 días y comprobantes |
+| `/boda/tareas` | Lista, "esta semana" y calendario mensual, más el checklist estándar retrocalculado |
+| `/boda/agenda-del-dia` | Cronograma hora por hora del evento, imprimible o guardable en PDF |
+| `/boda/proveedores` | Fichas por rubro con contacto, puntaje, notas y presupuestos adjuntos |
+| `/boda/comparador` | Presupuestos del mismo rubro lado a lado, normalizados a dólares |
+| `/boda/ideas` | Galería de fotos y links con estado (idea, evaluando, aprobada, descartada) |
 
 ## Setup local
 
@@ -60,6 +63,7 @@ Están versionadas en `supabase/migrations/` y se aplican en orden:
 | `0003_seed.sql` | La boda y los dos emails (histórico; ya no se usan para login) |
 | `0004_harden.sql` | Permisos de las funciones `security definer` |
 | `0005_open_access.sql` | Saca el login: las policies quedan abiertas a `anon` |
+| `0006_couples.sql` | `couples`/`couple_members`, prefijo `wedding_` en las tablas, `couple_id` en todas y RLS por pareja (revierte 0005) |
 
 Con la CLI de Supabase, contra el proyecto remoto:
 
@@ -68,21 +72,28 @@ npx supabase link --project-ref xmzrpudvjyangiirrpmo
 npx supabase db push
 ```
 
-O pegando cada archivo, en orden, en el SQL Editor del dashboard. **Ya están
-aplicadas** en el proyecto: esto es para recrearlo desde cero si hiciera falta.
+O pegando cada archivo, en orden, en el SQL Editor del dashboard. **0001–0005 ya
+están aplicadas** en el proyecto; 0006 en adelante se prueban primero en un
+entorno aparte y se aplican a producción con OK explícito.
 
 ### Cómo funciona el acceso
 
-No hay login: quien abre la URL entra directo, sin pantalla previa. Las
-policies de RLS están abiertas a los roles `anon` y `authenticated` (`using
-(true)`), así que cualquiera con el link lee y edita todo — invitados,
-presupuesto, pagos, etc. `wedding_members` se sigue usando para los nombres
-de "novio"/"novia" en los formularios, pero ya no filtra el acceso.
+Login con email y contraseña. No hay registro público: los usuarios se crean
+en Supabase → Authentication → Users y se vinculan a su pareja con una fila en
+`couple_members` (`user_id`).
 
-Si en algún momento se quiere volver a restringir el acceso, hay que
-revertir las policies de `0005_open_access.sql` a las de `0002_rls.sql`
-(vuelven a exigir `authenticated` + pertenencia a `wedding_members`) y
-reponer una pantalla de login.
+Todas las tablas de dominio tienen `couple_id` (con default `my_couple_id()`,
+así los inserts no necesitan mandarlo) y una policy
+`is_couple_member(couple_id)` para `authenticated`. Storage usa el mismo
+criterio con el primer segmento del path. La boda existente quedó con
+`couple_id = wedding_id`.
+
+`supabase/tests/rls_parejas.sql` verifica que un usuario de otra pareja no ve
+ni modifica nada (corre en una transacción con rollback):
+
+```bash
+psql "$DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/rls_parejas.sql
+```
 
 ## Deploy en Vercel
 
@@ -91,8 +102,8 @@ reponer una pantalla de login.
    Settings → Environment Variables (Production, Preview y Development).
 3. Deploy.
 
-No hay paso de configuración de auth: la app queda accesible apenas termina
-el deploy.
+En Supabase → Authentication → Sign In / Providers: dejar Email habilitado y
+desactivar "Allow new users to sign up".
 
 ## Comandos
 

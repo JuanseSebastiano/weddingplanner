@@ -13,7 +13,7 @@ export type Wedding = {
 export async function getWedding() {
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from("weddings")
+    .from("wedding_info")
     .select(
       "id, fecha, lugar, presupuesto_objetivo, moneda_base, cotizacion_referencia",
     )
