@@ -1,0 +1,190 @@
+@reference "../../app/globals.css";
+
+/*
+ * Estilos de Finanzas, portados de la app original (Tailwind v3) a v4.
+ *
+ * Cada variable guarda "R G B" (sin rgb()) para que las clases puedan
+ * componer opacidad (`border-wash/[0.06]`) y los estilos inline usen
+ * `rgb(var(--nf-x) / 14%)`. Los valores son la paleta de la boda, así los
+ * tres módulos se ven como una sola app. Todo queda bajo `.fin` para no
+ * pisar las clases de la boda.
+ */
+:root {
+  --nf-bg: 250 247 242;
+  --nf-sidebar: 255 255 255;
+  --nf-sunken: 243 238 230;
+  --nf-input: 246 242 235;
+  --nf-card: 255 255 255;
+  --nf-raised: 248 244 238;
+  --nf-raised-hover: 241 235 226;
+  --nf-well: 246 241 234;
+  --nf-wash: 34 30 27;
+
+  --nf-ink-primary: 34 30 27;
+  --nf-ink-strong: 26 23 20;
+  --nf-ink-bright: 50 45 41;
+  --nf-ink-soft: 70 63 58;
+  --nf-ink-secondary: 110 100 92;
+  --nf-ink-muted: 125 115 106;
+  --nf-ink-faint: 150 141 132;
+  --nf-ink-dim: 190 182 173;
+
+  --nf-accent: 164 74 63;
+  --nf-accent-soft: 138 61 51;
+  --nf-accent-bright: 186 90 76;
+  --nf-accent-deep: 138 61 51;
+  --nf-accent-on: 255 255 255;
+
+  --nf-violet: 107 122 90;
+  --nf-sky: 59 110 143;
+  --nf-pending: 181 122 31;
+  --nf-danger: 188 68 55;
+  --nf-danger-strong: 160 55 44;
+  --nf-swatch-empty: 216 208 196;
+
+  --nf-shadow-hero: 0 1px 2px rgba(34, 30, 27, 0.05), 0 16px 36px -22px rgba(34, 30, 27, 0.3);
+  --nf-shadow-lifted: 0 1px 2px rgba(34, 30, 27, 0.05), 0 22px 48px -28px rgba(34, 30, 27, 0.35);
+  --nf-shadow-accent: 0 10px 22px -14px rgba(164, 74, 63, 0.55);
+}
+
+/* Campos de formulario: en Finanzas `bg-input` es el fondo del campo. */
+.fin {
+  --input: rgb(var(--nf-input));
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes nf-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes nf-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes nf-grow {
+  from {
+    transform: scaleY(0.02);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes nf-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fin *,
+  .fin *::before,
+  .fin *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+.fin .card {
+  @apply rounded-[18px] border border-wash/[0.06] bg-card shadow-card;
+}
+
+.fin .card-sunken {
+  @apply rounded-2xl border border-wash/[0.06] bg-sunken;
+}
+
+.fin .label {
+  @apply mb-1.5 block text-[11.5px] font-medium tracking-[0.02em] text-ink-muted;
+}
+
+.fin .eyebrow {
+  @apply font-mono text-[11px] tracking-[0.12em] text-ink-faint;
+}
+
+.fin .input {
+  /* text-base y no text-sm: en iOS Safari, un input con font-size menor a
+     16px dispara un zoom automático al enfocarlo. */
+  @apply w-full rounded-xl border border-wash/[0.09] bg-input px-3.5 py-3 text-base text-ink-strong
+    outline-none transition-[border-color,box-shadow] duration-150
+    placeholder:text-ink-dim
+    focus:border-accent focus:shadow-[0_0_0_3px_rgb(var(--nf-accent)/16%)];
+}
+
+.fin .btn,
+.fin .btn-primary,
+.fin .btn-secondary,
+.fin .btn-ghost,
+.fin .btn-danger,
+.fin .btn-pending {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-medium
+    transition-[transform,background,box-shadow] duration-150
+    disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.fin .btn-primary {
+  @apply border-0 bg-gradient-to-b from-accent-bright to-accent-deep font-semibold text-accent-on
+    shadow-accent hover:-translate-y-px active:translate-y-0;
+}
+
+.fin .btn-secondary {
+  @apply border border-wash/[0.12] bg-raised text-ink-soft hover:bg-raisedHover hover:text-ink-primary;
+}
+
+.fin .btn-ghost {
+  @apply border border-transparent bg-transparent text-ink-secondary hover:bg-wash/[0.05] hover:text-ink-primary;
+}
+
+.fin .btn-danger {
+  @apply border border-danger-strong/30 bg-danger-strong/[0.07] text-danger hover:bg-danger-strong/[0.14];
+}
+
+/* Botón de acción sobre lo pendiente: ámbar. */
+.fin .btn-pending {
+  @apply border border-pending/30 bg-pending/10 font-semibold text-pending hover:bg-pending/[0.18];
+}
+
+.fin .chip {
+  @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs;
+}
+
+.fin .skeleton {
+  @apply rounded-[18px] border border-wash/[0.05];
+  background: linear-gradient(
+    90deg,
+    rgb(var(--nf-sunken)) 25%,
+    rgb(var(--nf-raised)) 50%,
+    rgb(var(--nf-sunken)) 75%
+  );
+  background-size: 200% 100%;
+  animation: nf-shimmer 1.5s linear infinite;
+}
+
+/*
+ * Trama diagonal que marca todo lo que el parser propuso y todavía no
+ * confirmó nadie. No se usa para ninguna otra cosa.
+ */
+.fin .pending-hatch {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgb(var(--nf-pending) / 6%) 0 8px,
+    transparent 8px 16px
+  );
+}

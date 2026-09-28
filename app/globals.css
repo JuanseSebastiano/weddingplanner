@@ -77,6 +77,36 @@
 
   --shadow-card: 0 1px 2px rgba(34, 30, 27, 0.04),
     0 10px 28px -18px rgba(34, 30, 27, 0.22);
+
+  /* Tokens de Finanzas. Los valores viven en variables --nf-* "R G B"
+     (ver components/finanzas/finanzas.css) para poder componer opacidad. */
+  --color-bg: rgb(var(--nf-bg));
+  --color-sidebar: rgb(var(--nf-sidebar));
+  --color-sunken: rgb(var(--nf-sunken));
+  --color-raised: rgb(var(--nf-raised));
+  --color-raisedHover: rgb(var(--nf-raised-hover));
+  --color-well: rgb(var(--nf-well));
+  --color-wash: rgb(var(--nf-wash));
+  --color-ink-primary: rgb(var(--nf-ink-primary));
+  --color-ink-strong: rgb(var(--nf-ink-strong));
+  --color-ink-bright: rgb(var(--nf-ink-bright));
+  --color-ink-soft: rgb(var(--nf-ink-soft));
+  --color-ink-secondary: rgb(var(--nf-ink-secondary));
+  --color-ink-muted: rgb(var(--nf-ink-muted));
+  --color-ink-faint: rgb(var(--nf-ink-faint));
+  --color-ink-dim: rgb(var(--nf-ink-dim));
+  --color-accent: rgb(var(--nf-accent));
+  --color-accent-soft: rgb(var(--nf-accent-soft));
+  --color-accent-bright: rgb(var(--nf-accent-bright));
+  --color-accent-deep: rgb(var(--nf-accent-deep));
+  --color-accent-on: rgb(var(--nf-accent-on));
+  --color-violet: rgb(var(--nf-violet));
+  --color-sky: rgb(var(--nf-sky));
+  --color-pending: rgb(var(--nf-pending));
+  --color-danger-strong: rgb(var(--nf-danger-strong));
+  --shadow-hero: var(--nf-shadow-hero);
+  --shadow-lifted: var(--nf-shadow-lifted);
+  --shadow-accent: var(--nf-shadow-accent);
 }
 
 body {

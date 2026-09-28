@@ -21,8 +21,8 @@ const MODULOS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/viaje", label: "Viaje", icon: Plane },
 ];
 
-/** Secciones de la boda. En escritorio cuelgan de "Boda"; en celular, tira arriba. */
-export const SECCIONES_BODA = [
+/** Secciones de cada módulo. En escritorio cuelgan del módulo; en celular, tira arriba. */
+const SECCIONES_BODA = [
   { href: "/boda", label: "Resumen" },
   { href: "/boda/invitados", label: "Invitados" },
   { href: "/boda/mesas", label: "Mesas" },
@@ -34,6 +34,20 @@ export const SECCIONES_BODA = [
   { href: "/boda/ideas", label: "Ideas" },
   { href: "/boda/agenda-del-dia", label: "Agenda del día" },
 ];
+
+const SECCIONES_FINANZAS = [
+  { href: "/finanzas", label: "Resumen" },
+  { href: "/finanzas/gastos", label: "Gastos" },
+  { href: "/finanzas/balance", label: "Ingresos y egresos" },
+  { href: "/finanzas/ahorros", label: "Ahorros" },
+  { href: "/finanzas/revision", label: "Revisión" },
+  { href: "/finanzas/configuracion", label: "Configuración" },
+];
+
+const SECCIONES: Record<string, { href: string; label: string }[]> = {
+  "/boda": SECCIONES_BODA,
+  "/finanzas": SECCIONES_FINANZAS,
+};
 
 function esActiva(pathname: string, href: string, exacta = false) {
   if (href === "/" || exacta) return pathname === href;
@@ -79,10 +93,10 @@ export function Sidebar({ nombres }: { nombres: string }) {
                 />
                 {label}
               </Link>
-              {href === "/boda" && activa && (
+              {SECCIONES[href] && activa && (
                 <div className="my-1 ml-6 flex flex-col border-l border-border-soft pl-2">
-                  {SECCIONES_BODA.map((s) => {
-                    const sub = esActiva(pathname, s.href, s.href === "/boda");
+                  {SECCIONES[href].map((s) => {
+                    const sub = esActiva(pathname, s.href, s.href === href);
                     return (
                       <Link
                         key={s.href}
@@ -146,15 +160,15 @@ export function BottomNav() {
   );
 }
 
-/** Tira de secciones de la boda, sólo en celular (en escritorio están en el lateral). */
-export function BodaTabs() {
+/** Tira de secciones de un módulo, sólo en celular (en escritorio están en el lateral). */
+export function ModuloTabs({ modulo }: { modulo: "/boda" | "/finanzas" }) {
   const pathname = usePathname();
 
   return (
     <nav className="no-print -mx-4 mb-4 overflow-x-auto px-4 lg:hidden">
       <ul className="flex w-max gap-1.5">
-        {SECCIONES_BODA.map((s) => {
-          const activa = esActiva(pathname, s.href, s.href === "/boda");
+        {SECCIONES[modulo].map((s) => {
+          const activa = esActiva(pathname, s.href, s.href === modulo);
           return (
             <li key={s.href}>
               <Link

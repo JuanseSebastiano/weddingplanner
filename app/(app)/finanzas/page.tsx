@@ -1,7 +1,5 @@
-export default function FinanzasPage() {
-  return (
-    <main>
-      <h1 className="font-serif text-2xl font-normal lg:text-[28px]">Finanzas</h1>
-    </main>
-  );
+import { DashboardPage } from "@/components/finanzas/client-pages";
+
+export default function Page() {
+  return <DashboardPage />;
 }

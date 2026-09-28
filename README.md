@@ -32,6 +32,36 @@ pareja.
 | `/boda/comparador` | Presupuestos del mismo rubro lado a lado, normalizados a dólares |
 | `/boda/ideas` | Galería de fotos y links con estado (idea, evaluando, aprobada, descartada) |
 
+## Finanzas (`/finanzas`)
+
+Portado de Nuestras Finanzas. La UI son las mismas páginas (componentes
+cliente con react-query) en `components/finanzas/`; la API Express vive en
+`lib/finanzas/server/` y la sirve el route handler `app/api/fin/[...path]`
+a través de un adaptador mínimo (`lib/finanzas/server/http.ts`), así los
+routers quedaron casi textuales.
+
+| Ruta | Qué hace |
+| --- | --- |
+| `/finanzas` | Disponible real, total del mes, rubros, reparto entre los dos y tendencia |
+| `/finanzas/gastos` | Gastos con filtros, alta y edición |
+| `/finanzas/balance` | Ingresos y egresos del mes y listado unificado |
+| `/finanzas/ahorros` | Caja de ahorro y cartera |
+| `/finanzas/revision` | Gastos detectados en mails: nada se imputa sin confirmarlo acá |
+| `/finanzas/configuracion` | Gmail, rubros, presupuestos, reglas, cuentas (saldo, cierre y vencimiento) |
+
+**Disponible real** = saldo líquido cargado en las cuentas − deuda de tarjeta
+impaga (vistas `fin_available_now` y `fin_card_debt`). De cada tarjeta se
+cuenta lo posterior al último cierre si ese resumen ya venció, o lo posterior
+al cierre anterior si todavía no.
+
+**Gmail**: el cron diario (`vercel.json`) llama a `/api/fin/gmail/cron` con
+`Authorization: Bearer $CRON_SECRET`. Cada mail reconocido entra como gasto
+`pending` y recién suma cuando alguien lo confirma en Revisión.
+
+```bash
+npm test   # tests de parsers, reglas, balance, presupuestos y cartera
+```
+
 ## Setup local
 
 ```bash
@@ -46,8 +76,9 @@ npm run dev                  # http://localhost:3000
 | --- | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API | URL del proyecto |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase → Project Settings → API Keys (publishable) | Cliente público; los datos los protege RLS |
-
-No hay más variables: no se usa la service role key en ningún lado.
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase → API Keys (secret) | API de finanzas y cron, solo servidor |
+| `CRON_SECRET` | Generarlo (`openssl rand -hex 32`) | Autoriza el cron de Gmail |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `GMAIL_TOKEN_ENCRYPTION_KEY` | Google Cloud Console / `openssl rand -hex 32` | Ingesta de mails (opcional) |
 
 El proyecto de Supabase de esta app es **`wedding-planner`**
 (ref `xmzrpudvjyangiirrpmo`, región São Paulo, plan free).
@@ -64,6 +95,7 @@ Están versionadas en `supabase/migrations/` y se aplican en orden:
 | `0004_harden.sql` | Permisos de las funciones `security definer` |
 | `0005_open_access.sql` | Saca el login: las policies quedan abiertas a `anon` |
 | `0006_couples.sql` | `couples`/`couple_members`, prefijo `wedding_` en las tablas, `couple_id` en todas y RLS por pareja (revierte 0005) |
+| `0007_finanzas.sql` | Tablas `fin_*`, RLS por pareja, rubros por defecto y vistas del disponible real |
 
 Con la CLI de Supabase, contra el proyecto remoto:
 

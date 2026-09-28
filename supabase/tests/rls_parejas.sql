@@ -9,42 +9,48 @@ begin;
 
 insert into auth.users (id, email, aud, role)
 values
-  ('aaaaaaaa-0000-0000-0000-000000000001', 'rls-a@test.local', 'authenticated', 'authenticated'),
-  ('bbbbbbbb-0000-0000-0000-000000000001', 'rls-b@test.local', 'authenticated', 'authenticated');
+  ('a0000000-0000-4000-8000-0000000000a1', 'rls-a@test.local', 'authenticated', 'authenticated'),
+  ('b0000000-0000-4000-8000-0000000000b1', 'rls-b@test.local', 'authenticated', 'authenticated');
 
 insert into couples (id, nombre) values
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Pareja A'),
-  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Pareja B');
+  ('a0000000-0000-4000-8000-00000000000a', 'Pareja A'),
+  ('b0000000-0000-4000-8000-00000000000b', 'Pareja B');
 
 insert into couple_members (couple_id, email, nombre, rol, user_id) values
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'rls-a@test.local', 'A', 'novio', 'aaaaaaaa-0000-0000-0000-000000000001'),
-  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'rls-b@test.local', 'B', 'novio', 'bbbbbbbb-0000-0000-0000-000000000001');
+  ('a0000000-0000-4000-8000-00000000000a', 'rls-a@test.local', 'A', 'novio', 'a0000000-0000-4000-8000-0000000000a1'),
+  ('b0000000-0000-4000-8000-00000000000b', 'rls-b@test.local', 'B', 'novio', 'b0000000-0000-4000-8000-0000000000b1');
 
 -- Datos de la pareja A en cada tabla con couple_id.
 insert into wedding_info (id, couple_id, fecha, lugar)
-values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '2030-01-01', 'A');
+values ('a0000000-0000-4000-8000-00000000000a', 'a0000000-0000-4000-8000-00000000000a', '2030-01-01', 'A');
+
+insert into fin_accounts (id, couple_id, owner_id, name, type, balance)
+values ('a0000000-0000-4000-8000-0000000000c1', 'a0000000-0000-4000-8000-00000000000a',
+        'a0000000-0000-4000-8000-0000000000a1', 'Cuenta A', 'bank_account', 1000);
+insert into fin_expenses (couple_id, user_id, amount, expense_date)
+values ('a0000000-0000-4000-8000-00000000000a', 'a0000000-0000-4000-8000-0000000000a1', 50, current_date);
 
 -- Como usuario A: lo inserta usando el default de couple_id.
 set local role authenticated;
 select set_config('request.jwt.claims',
-  '{"sub":"aaaaaaaa-0000-0000-0000-000000000001","role":"authenticated"}', true);
+  '{"sub":"a0000000-0000-4000-8000-0000000000a1","role":"authenticated"}', true);
 
-insert into wedding_tasks (wedding_id, titulo) values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'tarea A');
-insert into wedding_guests (wedding_id, nombre) values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'invitado A');
+insert into wedding_tasks (wedding_id, titulo) values ('a0000000-0000-4000-8000-00000000000a', 'tarea A');
+insert into wedding_guests (wedding_id, nombre) values ('a0000000-0000-4000-8000-00000000000a', 'invitado A');
 
 do $$
 begin
   if (select count(*) from wedding_tasks where titulo = 'tarea A') <> 1 then
     raise exception 'A no ve su propia tarea';
   end if;
-  if (select couple_id from wedding_tasks where titulo = 'tarea A') <> 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' then
+  if (select couple_id from wedding_tasks where titulo = 'tarea A') <> 'a0000000-0000-4000-8000-00000000000a' then
     raise exception 'El default de couple_id no tomó la pareja de A';
   end if;
 end $$;
 
 -- Como usuario B: no ve nada de A en ninguna tabla con couple_id.
 select set_config('request.jwt.claims',
-  '{"sub":"bbbbbbbb-0000-0000-0000-000000000001","role":"authenticated"}', true);
+  '{"sub":"b0000000-0000-4000-8000-0000000000b1","role":"authenticated"}', true);
 
 do $$
 declare
@@ -59,7 +65,7 @@ begin
       and tb.table_type = 'BASE TABLE'
   loop
     execute format('select count(*) from %I where couple_id <> %L', t,
-      'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb') into n;
+      'b0000000-0000-4000-8000-00000000000b') into n;
     if n > 0 then
       raise exception 'Fuga: B ve % filas ajenas en %', n, t;
     end if;
@@ -71,6 +77,9 @@ begin
   if (select count(*) from couple_members) <> 1 then
     raise exception 'Fuga: B ve miembros ajenos';
   end if;
+  if (select count(*) from fin_available_now) <> 0 then
+    raise exception 'Fuga: B ve el disponible de A';
+  end if;
   if (select count(*) from wedding_members) <> 0 then
     raise exception 'Fuga: B ve wedding_members ajenos';
   end if;
@@ -78,7 +87,7 @@ begin
   -- B no puede escribir en la pareja A.
   begin
     insert into wedding_tasks (wedding_id, couple_id, titulo)
-    values ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'intrusa');
+    values ('a0000000-0000-4000-8000-00000000000a', 'a0000000-0000-4000-8000-00000000000a', 'intrusa');
     raise exception 'Fuga: B insertó en la pareja A';
   exception when insufficient_privilege then null;
   end;

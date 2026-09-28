@@ -1,9 +1,9 @@
-import { BodaTabs } from "@/components/nav";
+import { ModuloTabs } from "@/components/nav";
 
 export default function BodaLayout({ children }: LayoutProps<"/boda">) {
   return (
     <>
-      <BodaTabs />
+      <ModuloTabs modulo="/boda" />
       {children}
     </>
   );
