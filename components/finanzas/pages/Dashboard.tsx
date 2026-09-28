@@ -11,6 +11,7 @@ import {
 } from '@nf/shared';
 import { useDashboard } from '../hooks/queries';
 import { AvailableCard } from '../components/AvailableCard';
+import { CommitmentsCard } from '../components/CommitmentsCard';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { CategoryDonut } from '../components/charts/CategoryDonut';
 import { UserSplit } from '../components/charts/UserSplit';
@@ -175,6 +176,7 @@ export function DashboardPage() {
       </div>
 
       <AvailableCard />
+      <CommitmentsCard />
 
       {data && <BudgetAlert budgets={data.budgets} />}
 

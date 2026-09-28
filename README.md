@@ -62,6 +62,20 @@ al cierre anterior si todavía no.
 npm test   # tests de parsers, reglas, balance, presupuestos y cartera
 ```
 
+## Integraciones entre módulos
+
+Vistas SQL (`0009_integraciones.sql`), sin duplicar datos:
+
+- `fin_commitments`: pagos pendientes de la boda, lo que falta pagar del
+  viaje y los resúmenes de tarjeta por pagar, con vencimiento, monto,
+  moneda y link al módulo. Se muestran en el resumen de Finanzas.
+- `trip_budget`: presupuesto del viaje (vuelos, trenes, reservas, crucero)
+  por moneda, pagado y pendiente, también en Finanzas.
+- Alerta en Finanzas si el disponible real proyectado a la fecha del próximo
+  pago de la boda (disponible real menos los compromisos que vencen antes)
+  no alcanza para ese pago. Todo se compara en pesos, con la cotización del
+  pago o la de referencia de la boda.
+
 ## Viaje (`/viaje`)
 
 Portado de Luna de Miel: itinerario, vuelos, trenes, reservas, crucero y
@@ -115,6 +129,7 @@ Están versionadas en `supabase/migrations/` y se aplican en orden:
 | `0006_couples.sql` | `couples`/`couple_members`, prefijo `wedding_` en las tablas, `couple_id` en todas y RLS por pareja (revierte 0005) |
 | `0007_finanzas.sql` | Tablas `fin_*`, RLS por pareja, rubros por defecto y vistas del disponible real |
 | `0008_viaje.sql` | Tablas `trip_*` con id uuid, `updated_at` del servidor, `deleted_at` y RLS por pareja |
+| `0009_integraciones.sql` | Vistas `fin_commitments`, `fin_card_next_due` y `trip_budget` |
 
 Con la CLI de Supabase, contra el proyecto remoto:
 

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   Account,
   AvailableSummary,
+  CommitmentsSummary,
   BudgetInput,
   BudgetWithCategory,
   CashflowSummary,
@@ -55,8 +56,10 @@ export interface ApplyRulesResult {
 /** Todo lo que cambia al confirmar, crear o editar un gasto. */
 function invalidateExpenseViews(queryClient: ReturnType<typeof useQueryClient>): void {
   void queryClient.invalidateQueries({ queryKey: ['expenses'] });
-  // Un gasto confirmado en tarjeta mueve la deuda y el disponible real.
+  // Un gasto confirmado en tarjeta mueve la deuda, el disponible real y
+  // el próximo resumen.
   void queryClient.invalidateQueries({ queryKey: ['available'] });
+  void queryClient.invalidateQueries({ queryKey: ['commitments'] });
   void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
   void queryClient.invalidateQueries({ queryKey: ['review'] });
   // El balance y el listado unificado mezclan las dos tablas: un gasto
@@ -106,6 +109,13 @@ export function useAvailable() {
   return useQuery({
     queryKey: ['available'],
     queryFn: () => api.get<AvailableSummary>('/dashboard/available'),
+  });
+}
+
+export function useCommitments() {
+  return useQuery({
+    queryKey: ['commitments'],
+    queryFn: () => api.get<CommitmentsSummary>('/dashboard/commitments'),
   });
 }
 
@@ -402,6 +412,7 @@ export function useCreateAccount() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['accounts'] });
       void queryClient.invalidateQueries({ queryKey: ['available'] });
+      void queryClient.invalidateQueries({ queryKey: ['commitments'] });
     },
   });
 }
@@ -414,6 +425,7 @@ export function useUpdateAccount() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['accounts'] });
       void queryClient.invalidateQueries({ queryKey: ['available'] });
+      void queryClient.invalidateQueries({ queryKey: ['commitments'] });
     },
   });
 }

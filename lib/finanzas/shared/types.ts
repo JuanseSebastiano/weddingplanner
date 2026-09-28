@@ -95,6 +95,29 @@ export interface CardDebt {
   debt: number;
 }
 
+/** Compromiso futuro de la pareja (vista fin_commitments). */
+export interface Commitment {
+  source: 'boda' | 'viaje' | 'tarjeta';
+  ref_id: string;
+  due_date: string | null;
+  amount: number;
+  currency: 'ARS' | 'USD';
+  /** Pesos por dólar, si el compromiso tiene su propia cotización. */
+  fx_rate: number | null;
+  label: string;
+  href: string;
+}
+
+export interface CommitmentsSummary {
+  commitments: Commitment[];
+  /** Disponible real conjunto llevado a pesos. */
+  available_ars: number;
+  reference_rate: number | null;
+  trip_budget: Array<{ currency: 'ARS' | 'USD'; total: number; paid: number; pending: number }>;
+  /** Presente si el disponible proyectado no cubre el próximo pago de la boda. */
+  alert: { commitment: Commitment; projected_ars: number; needed_ars: number } | null;
+}
+
 export interface AvailableSummary {
   totals: AvailableNow[];
   cards: CardDebt[];

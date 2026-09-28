@@ -29,6 +29,8 @@ values ('a0000000-0000-4000-8000-0000000000c1', 'a0000000-0000-4000-8000-0000000
         'a0000000-0000-4000-8000-0000000000a1', 'Cuenta A', 'bank_account', 1000);
 insert into fin_expenses (couple_id, user_id, amount, expense_date)
 values ('a0000000-0000-4000-8000-00000000000a', 'a0000000-0000-4000-8000-0000000000a1', 50, current_date);
+insert into trip_flights (id, couple_id, origen, destino, amount)
+values (gen_random_uuid(), 'a0000000-0000-4000-8000-00000000000a', 'EZE', 'CDG', 900);
 
 -- Como usuario A: lo inserta usando el default de couple_id.
 set local role authenticated;
@@ -79,6 +81,9 @@ begin
   end if;
   if (select count(*) from fin_available_now) <> 0 then
     raise exception 'Fuga: B ve el disponible de A';
+  end if;
+  if (select count(*) from fin_commitments) <> 0 or (select count(*) from trip_budget) <> 0 then
+    raise exception 'Fuga: B ve compromisos o presupuesto del viaje de A';
   end if;
   if (select count(*) from wedding_members) <> 0 then
     raise exception 'Fuga: B ve wedding_members ajenos';

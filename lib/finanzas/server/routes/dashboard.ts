@@ -4,6 +4,7 @@ import { currentMonth } from '@nf/shared';
 import { asyncHandler, badRequest } from '../lib/errors';
 import type { AuthedRequest } from '../middleware/auth';
 import { getAvailableSummary, getDashboardSummary } from '../services/dashboard';
+import { getCommitmentsSummary } from '../services/commitments';
 
 const querySchema = z.object({
   month: z
@@ -33,5 +34,13 @@ dashboardRouter.get(
   '/available',
   asyncHandler<AuthedRequest>(async (req, res) => {
     res.json(await getAvailableSummary(req.auth.coupleId));
+  }),
+);
+
+/** Compromisos futuros (boda, viaje, tarjetas), presupuesto del viaje y alerta. */
+dashboardRouter.get(
+  '/commitments',
+  asyncHandler<AuthedRequest>(async (req, res) => {
+    res.json(await getCommitmentsSummary(req.auth.coupleId));
   }),
 );
