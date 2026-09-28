@@ -1,8 +1,5 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
 
 const LINKS = [
   { href: "/mesas", label: "Mesas" },
@@ -13,19 +10,7 @@ const LINKS = [
   { href: "/agenda-del-dia", label: "Agenda del día" },
 ];
 
-export default async function MasPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  async function salir() {
-    "use server";
-    const supabase = await createClient();
-    await supabase.auth.signOut();
-    redirect("/login");
-  }
-
+export default function MasPage() {
   return (
     <main>
       <h1 className="font-serif text-2xl font-normal lg:text-[28px]">Más</h1>
@@ -43,15 +28,6 @@ export default async function MasPage() {
           </li>
         ))}
       </ul>
-
-      <p className="mt-6 text-sm text-muted-foreground">
-        Sesión iniciada como {user?.email}
-      </p>
-      <form action={salir}>
-        <Button variant="outline" className="mt-2 w-full">
-          Cerrar sesión
-        </Button>
-      </form>
     </main>
   );
 }

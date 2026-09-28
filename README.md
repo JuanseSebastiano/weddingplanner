@@ -1,14 +1,18 @@
 # Wedding Planner
 
-App privada para organizar nuestro casamiento (dos usuarios). Reemplaza
-planillas, notas y chats: invitados y mesas, presupuesto y pagos en ARS/USD,
-tareas, proveedores, ideas y agenda del día.
+App para organizar nuestro casamiento. Reemplaza planillas, notas y chats:
+invitados y mesas, presupuesto y pagos en ARS/USD, tareas, proveedores, ideas y
+agenda del día.
 
 **Casamiento:** 02/04/2027 en Solís, Provincia de Buenos Aires · presupuesto
 objetivo USD 10.000 · ~100 invitados.
 
 **Stack:** Next.js 16 (App Router, TypeScript, Server Actions) · Supabase
-(Postgres, Auth, Storage, RLS) · Tailwind CSS v4 · Vercel.
+(Postgres, Storage) · Tailwind CSS v4 · Vercel.
+
+**Acceso:** sin login — quien tenga el link entra directo y puede ver y
+editar todo. No hay barrera de autenticación; el único control es no
+compartir la URL.
 
 ## Módulos
 
@@ -53,8 +57,9 @@ Están versionadas en `supabase/migrations/` y se aplican en orden:
 | --- | --- |
 | `0001_schema.sql` | Tablas, enums e índices |
 | `0002_rls.sql` | RLS en todas las tablas, bucket de Storage y funciones de acceso |
-| `0003_seed.sql` | La boda y los dos emails habilitados |
+| `0003_seed.sql` | La boda y los dos emails (histórico; ya no se usan para login) |
 | `0004_harden.sql` | Permisos de las funciones `security definer` |
+| `0005_open_access.sql` | Saca el login: las policies quedan abiertas a `anon` |
 
 Con la CLI de Supabase, contra el proyecto remoto:
 
@@ -68,16 +73,16 @@ aplicadas** en el proyecto: esto es para recrearlo desde cero si hiciera falta.
 
 ### Cómo funciona el acceso
 
-- Login con **magic link**. Antes de mandarlo, la app pregunta por RPC si el
-  email está en `wedding_members`; si no está, no se envía nada.
-- Toda tabla tiene RLS: sólo se ven las filas cuyo `wedding_id` corresponde a un
-  `wedding_members` con tu email o `user_id`. Aunque alguien se cree un usuario
-  por fuera, no ve una sola fila (verificado: un usuario autenticado que no es
-  miembro lee 0 filas y sus INSERT son rechazados por la policy).
-- Los archivos van al bucket privado `files` bajo el prefijo `{wedding_id}/…`,
-  con la misma regla, y se muestran con URLs firmadas de vida corta.
+No hay login: quien abre la URL entra directo, sin pantalla previa. Las
+policies de RLS están abiertas a los roles `anon` y `authenticated` (`using
+(true)`), así que cualquiera con el link lee y edita todo — invitados,
+presupuesto, pagos, etc. `wedding_members` se sigue usando para los nombres
+de "novio"/"novia" en los formularios, pero ya no filtra el acceso.
 
-Para cambiar quién entra, se edita la tabla `wedding_members`, no el código.
+Si en algún momento se quiere volver a restringir el acceso, hay que
+revertir las policies de `0005_open_access.sql` a las de `0002_rls.sql`
+(vuelven a exigir `authenticated` + pertenencia a `wedding_members`) y
+reponer una pantalla de login.
 
 ## Deploy en Vercel
 
@@ -85,12 +90,9 @@ Para cambiar quién entra, se edita la tabla `wedding_members`, no el código.
 2. Cargar `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` en
    Settings → Environment Variables (Production, Preview y Development).
 3. Deploy.
-4. En Supabase → Authentication → URL Configuration:
-   - **Site URL**: el dominio de Vercel.
-   - **Redirect URLs**: agregar `https://<dominio>/auth/callback` y, para
-     desarrollo, `http://localhost:3000/auth/callback`.
 
-   Sin este paso el magic link redirige a la URL equivocada y el login falla.
+No hay paso de configuración de auth: la app queda accesible apenas termina
+el deploy.
 
 ## Comandos
 

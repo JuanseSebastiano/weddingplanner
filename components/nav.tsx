@@ -49,11 +49,9 @@ function esActiva(pathname: string, href: string) {
 export function Sidebar({
   nombres,
   fecha,
-  email,
 }: {
   nombres: string;
   fecha: string;
-  email: string;
 }) {
   const pathname = usePathname();
 
@@ -105,10 +103,8 @@ export function Sidebar({
         href="/mas"
         className="mt-auto flex items-center gap-2.5 border-t border-border-soft px-2.5 pt-3 text-xs text-muted-foreground hover:text-foreground"
       >
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-sage-soft text-[11.5px] font-bold text-sage">
-          {email[0]?.toUpperCase()}
-        </span>
-        <span className="min-w-0 truncate">{email}</span>
+        <MoreHorizontal className="h-4 w-4 shrink-0" />
+        Más
       </Link>
     </aside>
   );
