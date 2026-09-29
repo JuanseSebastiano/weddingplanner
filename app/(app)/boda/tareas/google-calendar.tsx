@@ -1,14 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 /** Link privado para suscribirse a las tareas desde Google Calendar. */
 export function GoogleCalendar({ token }: { token: string }) {
-  const [host, setHost] = useState("");
+  // En el servidor no hay host: se muestra recién en el cliente.
+  const host = useSyncExternalStore(
+    () => () => {},
+    () => window.location.host,
+    () => "",
+  );
   const [copiado, setCopiado] = useState(false);
-  useEffect(() => setHost(window.location.host), []);
   if (!host) return null;
 
   const path = `/api/calendario/${token}.ics`;
