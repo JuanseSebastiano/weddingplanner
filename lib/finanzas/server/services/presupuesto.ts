@@ -1,6 +1,7 @@
 import type { Commitment, PresupuestoSummary } from '@nf/shared';
 import { CERO, calcularItem, sumar, type Item, type Pago } from '@/lib/plata';
 import { supabaseAdmin } from '../lib/supabase';
+import { getPortfolioSummary } from './portfolio';
 
 /**
  * Presupuesto de la boda y del viaje con sus pagos programados. Los datos
@@ -8,7 +9,7 @@ import { supabaseAdmin } from '../lib/supabase';
  * el viaje sale de la vista trip_budget (cuotas incluidas).
  */
 export async function getPresupuestoSummary(coupleId: string): Promise<PresupuestoSummary> {
-  const [itemsRes, pagosRes, weddingRes, viajeRes, compromisosRes] = await Promise.all([
+  const [itemsRes, pagosRes, weddingRes, viajeRes, compromisosRes, portfolio] = await Promise.all([
     supabaseAdmin.from('wedding_budget_items').select('*').eq('couple_id', coupleId),
     supabaseAdmin.from('wedding_payments').select('*').eq('couple_id', coupleId),
     supabaseAdmin.from('wedding_info').select('cotizacion_referencia').eq('couple_id', coupleId).maybeSingle(),
@@ -19,6 +20,7 @@ export async function getPresupuestoSummary(coupleId: string): Promise<Presupues
       .eq('couple_id', coupleId)
       .in('source', ['boda', 'viaje'])
       .order('due_date', { ascending: true, nullsFirst: false }),
+    getPortfolioSummary(coupleId),
   ]);
   for (const res of [itemsRes, pagosRes, weddingRes, viajeRes, compromisosRes]) {
     if (res.error) throw res.error;
@@ -73,5 +75,6 @@ export async function getPresupuestoSummary(coupleId: string): Promise<Presupues
         href: row.href,
       }),
     ),
+    ahorro: { total_ars: portfolio.total_savings, cotizacion: portfolio.fx?.rate ?? null },
   };
 }

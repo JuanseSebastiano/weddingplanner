@@ -33,7 +33,12 @@ export function PresupuestoPage() {
   const { data, isLoading } = usePresupuesto();
   if (isLoading || !data) return null;
 
-  const { boda, viaje, pagos } = data;
+  const { boda, viaje, pagos, ahorro } = data;
+  const cotizacion = boda?.cotizacion ?? ahorro.cotizacion;
+  const aArs = (monto: number, moneda: 'ARS' | 'USD') => (moneda === 'USD' ? monto * (cotizacion ?? 0) : monto);
+  const totalArs = (boda?.previsto.ars ?? 0) + viaje.reduce((acc, v) => acc + aArs(v.total, v.currency), 0);
+  const faltaArs = totalArs - ahorro.total_ars;
+  const enUsd = (ars: number) => (cotizacion ? ` ≈ ${formatCurrency(ars / cotizacion, 'USD')}` : '');
   const today = new Date().toISOString().slice(0, 10);
   const porMes = new Map<string, Commitment[]>();
   for (const p of pagos) {
@@ -46,6 +51,16 @@ export function PresupuestoPage() {
       <div className="flex flex-col gap-1.5">
         <span className="eyebrow">PROYECTOS DE LA PAREJA</span>
         <h1 className="m-0 text-[26px] font-semibold text-ink-strong">Presupuesto</h1>
+      </div>
+
+      <div className="card flex flex-col gap-2 px-[22px] py-5">
+        <span className="eyebrow">RESUMEN</span>
+        <Linea label="Presupuesto total (boda + viaje)" valor={formatCurrency(totalArs) + enUsd(totalArs)} />
+        <Linea label="Ahorrado" valor={formatCurrency(ahorro.total_ars) + enUsd(ahorro.total_ars)} />
+        <Linea
+          label={faltaArs > 0 ? 'Falta ahorrar' : 'Ahorro de más'}
+          valor={formatCurrency(Math.abs(faltaArs)) + enUsd(Math.abs(faltaArs))}
+        />
       </div>
 
       <div className="grid gap-[18px] sm:grid-cols-2">
