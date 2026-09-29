@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { currentMonth } from '@nf/shared';
 import { asyncHandler, badRequest } from '../lib/errors';
 import type { AuthedRequest } from '../middleware/auth';
+import { personaDe } from '../lib/persona';
 import { getCashflowSummary, listLedger } from '../services/cashflow';
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida, se espera YYYY-MM-DD');
@@ -27,7 +28,7 @@ cashflowRouter.get(
     const parsed = monthSchema.optional().safeParse(req.query.month);
     if (!parsed.success) throw badRequest('Mes inválido', parsed.error.flatten());
 
-    const summary = await getCashflowSummary(req.auth.coupleId, parsed.data ?? currentMonth());
+    const summary = await getCashflowSummary(req.auth.coupleId, parsed.data ?? currentMonth(), personaDe(req));
     res.json(summary);
   }),
 );

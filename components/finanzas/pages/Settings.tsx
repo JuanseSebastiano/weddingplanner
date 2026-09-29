@@ -418,7 +418,7 @@ function BudgetsPanel() {
 
   return (
     <Panel
-      title="Topes de presupuesto"
+      title="Topes por rubro"
       meta={rows.length > 0 ? `${formatCurrency(total)} POR MES` : undefined}
     >
       <p className="m-0 text-xs leading-relaxed text-ink-secondary [text-wrap:pretty]">

@@ -25,6 +25,7 @@ import {
   type DatosTarea,
 } from "./actions";
 import { CalendarioMensual } from "./calendario";
+import { GoogleCalendar } from "./google-calendar";
 
 export type Tarea = DatosTarea & { id: string };
 
@@ -35,11 +36,13 @@ export function Tareas({
   vendors,
   miembros,
   fechaBoda,
+  calendarToken,
 }: {
   tareas: Tarea[];
   vendors: { id: string; nombre: string }[];
   miembros: { nombre: string; rol: string }[];
   fechaBoda: string;
+  calendarToken: string | null;
 }) {
   const [vista, setVista] = useState<"lista" | "semana" | "calendario">(
     "lista",
@@ -111,6 +114,8 @@ export function Tareas({
           <span className="text-danger"> · {vencidas} vencidas</span>
         )}
       </p>
+
+      {calendarToken && <GoogleCalendar token={calendarToken} />}
 
       <div className="mt-3 flex gap-1 rounded-lg bg-muted p-1">
         {(

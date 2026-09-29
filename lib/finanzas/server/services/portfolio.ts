@@ -14,12 +14,12 @@ import { getCash } from './savings';
  * de la UI se hace en el frontend con `fx.rate`, así no hay que duplicar
  * cada campo monetario en las dos monedas.
  */
-export async function getPortfolioSummary(coupleId: string): Promise<PortfolioSummary> {
+export async function getPortfolioSummary(coupleId: string, userId?: string): Promise<PortfolioSummary> {
   const [holdings, { quotes, asOf }, fx, cash] = await Promise.all([
-    listHoldings(coupleId),
+    listHoldings(coupleId, userId),
     getQuotes(),
     getUsdRate(),
-    getCash(coupleId),
+    getCash(coupleId, undefined, userId),
   ]);
 
   const positions: HoldingPosition[] = holdings.map((holding) => {

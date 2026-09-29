@@ -5,7 +5,7 @@ import { Tareas, type Tarea } from "./tareas";
 export default async function TareasPage() {
   const supabase = await createClient();
 
-  const [wedding, { data: tasks }, { data: vendors }, { data: miembros }] =
+  const [wedding, { data: tasks }, { data: vendors }, { data: miembros }, { data: pareja }] =
     await Promise.all([
       getWedding(),
       supabase
@@ -16,6 +16,7 @@ export default async function TareasPage() {
         .order("fecha_limite", { nullsFirst: false }),
       supabase.from("wedding_vendors").select("id, nombre").order("nombre"),
       supabase.from("couple_members").select("nombre, rol"),
+      supabase.from("couples").select("calendar_token").maybeSingle(),
     ]);
 
   return (
@@ -24,6 +25,7 @@ export default async function TareasPage() {
       vendors={vendors ?? []}
       miembros={miembros ?? []}
       fechaBoda={wedding.fecha}
+      calendarToken={pareja?.calendar_token ?? null}
     />
   );
 }

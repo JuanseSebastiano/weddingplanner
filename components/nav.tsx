@@ -40,6 +40,7 @@ const SECCIONES_FINANZAS = [
   { href: "/finanzas/gastos", label: "Gastos" },
   { href: "/finanzas/balance", label: "Ingresos y egresos" },
   { href: "/finanzas/ahorros", label: "Ahorros" },
+  { href: "/finanzas/presupuesto", label: "Presupuesto" },
   { href: "/finanzas/revision", label: "Revisión" },
   { href: "/finanzas/configuracion", label: "Configuración" },
 ];

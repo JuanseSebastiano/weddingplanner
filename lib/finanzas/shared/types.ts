@@ -118,6 +118,20 @@ export interface CommitmentsSummary {
   alert: { commitment: Commitment; projected_ars: number; needed_ars: number } | null;
 }
 
+/** Presupuesto de los proyectos de la pareja (Finanzas → Presupuesto). */
+export interface PresupuestoSummary {
+  /** Boda, expresada en las dos monedas con la cotización de referencia. */
+  boda: {
+    previsto: { usd: number; ars: number };
+    pagado: { usd: number; ars: number };
+    pendiente: { usd: number; ars: number };
+    cotizacion: number;
+  } | null;
+  viaje: Array<{ currency: 'ARS' | 'USD'; total: number; paid: number; pending: number }>;
+  /** Pagos programados impagos de la boda y del viaje, por fecha. */
+  pagos: Commitment[];
+}
+
 export interface AvailableSummary {
   totals: AvailableNow[];
   cards: CardDebt[];

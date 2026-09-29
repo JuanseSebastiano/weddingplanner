@@ -4,6 +4,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { CATEGORIAS, db, withId, type Categoria, type Expense, type Moneda } from '../db'
 import { Field, FormActions, Modal, fmtDate, useMonto } from '../ui'
+import { CuotasModal, useItemsPresupuesto } from '../cuotas'
 
 const MONEDAS: Moneda[] = ['USD', 'ARS']
 const SIMBOLO: Record<Moneda, string> = { USD: 'US$', ARS: '$' }
@@ -83,6 +84,9 @@ export default function Gastos() {
         </div>
       )}
 
+      <Presupuesto />
+
+      <h3 className="section-title">Gastos del viaje</h3>
       <div className="filters">
         <select value={filtroCat} onChange={(e) => setFiltroCat(e.target.value)}>
           <option value="">Todas las categorías</option>
@@ -169,5 +173,73 @@ function ExpenseForm({ expense, onClose }: { expense: Expense; onClose: () => vo
         <FormActions onCancel={onClose} onDelete={f.id ? remove : undefined} />
       </form>
     </Modal>
+  )
+}
+
+/** Lo que tiene precio (crucero, vuelos, trenes, reservas): total, pagado y cuotas. */
+function Presupuesto() {
+  const items = useItemsPresupuesto()
+  const [abierto, setAbierto] = useState<string | null>(null)
+  if (!items || items.length === 0) return null
+
+  const porMoneda = new Map<Moneda, { total: number; pagado: number }>()
+  for (const i of items) {
+    const t = porMoneda.get(i.currency) ?? { total: 0, pagado: 0 }
+    t.total += i.amount
+    t.pagado += i.pagado
+    porMoneda.set(i.currency, t)
+  }
+  const item = items.find((i) => i.id === abierto)
+
+  return (
+    <>
+      <h3 className="section-title">Presupuesto del viaje</h3>
+      <div className="card totals">
+        {MONEDAS.filter((m) => porMoneda.has(m)).map((m) => {
+          const t = porMoneda.get(m)!
+          return (
+            <div key={m}>
+              <div className="total-row">
+                <span>Total {m}</span>
+                <span className="amount">{fmtMonto(t.total, m)}</span>
+              </div>
+              <div className="cat-row">
+                <span>Pagado</span>
+                <span>{fmtMonto(t.pagado, m)}</span>
+              </div>
+              <div className="cat-row">
+                <span>Falta pagar</span>
+                <span>{fmtMonto(t.total - t.pagado, m)}</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      <div className="card">
+        {items.map((i) => (
+          <div className="expense-row" key={i.id} onClick={() => setAbierto(i.id)} style={{ cursor: 'pointer' }}>
+            <div>
+              <div>
+                <strong>{i.label}</strong>
+              </div>
+              <div className="meta">
+                {i.cuotas.length > 0
+                  ? `${i.cuotas.filter((c) => c.paid).length} de ${i.cuotas.length} cuotas pagas · pagado ${fmtMonto(i.pagado, i.currency)}`
+                  : i.pagado > 0
+                    ? 'pagado'
+                    : 'sin cuotas · tocá para agregar'}
+              </div>
+              {i.proxima && (
+                <div className="meta">
+                  Próxima: {fmtDate(i.proxima.fecha)} · {fmtMonto(i.proxima.amount, i.currency)}
+                </div>
+              )}
+            </div>
+            <span className="amount">{fmtMonto(i.amount, i.currency)}</span>
+          </div>
+        ))}
+      </div>
+      {item && <CuotasModal item={item} onClose={() => setAbierto(null)} />}
+    </>
   )
 }

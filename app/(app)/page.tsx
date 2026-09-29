@@ -127,7 +127,7 @@ export default async function InicioPage() {
         ) : (
           <ul className="mt-2 divide-y divide-border-soft">
             {proximos.map((c) => (
-              <li key={`${c.source}-${c.ref_id}-${c.currency}`}>
+              <li key={`${c.source}-${c.ref_id}-${c.currency}-${c.due_date}`}>
                 <Link href={c.href} className="flex items-center gap-3 py-2.5">
                   <Badge>{ORIGEN[c.source]}</Badge>
                   <span className="min-w-0 flex-1">

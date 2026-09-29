@@ -9,6 +9,7 @@ import {
   type UserTotal,
 } from '@nf/shared';
 import { supabaseAdmin } from '../lib/supabase';
+import { soloDe } from '../lib/persona';
 import { buildBudgetStatuses } from './budget-math';
 import { BUDGET_SELECT } from './budgets';
 
@@ -45,6 +46,7 @@ function isMissingTable(error: { code?: string }): boolean {
 export async function getDashboardSummary(
   coupleId: string,
   month: string,
+  userId?: string,
 ): Promise<DashboardSummary> {
   const trendStart = monthBounds(addMonths(month, -(TREND_MONTHS - 1))).start;
   const { start: monthStart, end: monthEnd } = monthBounds(month);
@@ -52,28 +54,40 @@ export async function getDashboardSummary(
   const { start: prevStart, end: prevEnd } = monthBounds(previous);
 
   const [expensesRes, categoriesRes, membersRes, pendingRes, incomesRes, budgetsRes] = await Promise.all([
-    supabaseAdmin
-      .from('fin_expenses')
-      .select('amount, expense_date, user_id, category_id')
-      .eq('couple_id', coupleId)
-      .eq('status', 'confirmed')
-      .gte('expense_date', trendStart)
-      .lte('expense_date', monthEnd),
+    soloDe(
+      supabaseAdmin
+        .from('fin_expenses')
+        .select('amount, expense_date, user_id, category_id')
+        .eq('couple_id', coupleId)
+        .eq('status', 'confirmed')
+        .gte('expense_date', trendStart)
+        .lte('expense_date', monthEnd),
+      userId,
+    ),
     supabaseAdmin.from('fin_categories').select('id, name, color').eq('couple_id', coupleId),
-    supabaseAdmin.from('couple_members').select('id:user_id, display_name:nombre').eq('couple_id', coupleId).not('user_id', 'is', null),
-    supabaseAdmin
-      .from('fin_expenses')
-      .select('id', { count: 'exact', head: true })
-      .eq('couple_id', coupleId)
-      .eq('status', 'pending'),
+    soloDe(
+      supabaseAdmin.from('couple_members').select('id:user_id, display_name:nombre').eq('couple_id', coupleId).not('user_id', 'is', null),
+      userId,
+    ),
+    soloDe(
+      supabaseAdmin
+        .from('fin_expenses')
+        .select('id', { count: 'exact', head: true })
+        .eq('couple_id', coupleId)
+        .eq('status', 'pending'),
+      userId,
+    ),
     // Solo el mes consultado: el dashboard usa el ingreso para la tarjeta
     // de balance, no para la tendencia (esa vive en la sección Balance).
-    supabaseAdmin
-      .from('fin_incomes')
-      .select('amount')
-      .eq('couple_id', coupleId)
-      .gte('income_date', monthStart)
-      .lte('income_date', monthEnd),
+    soloDe(
+      supabaseAdmin
+        .from('fin_incomes')
+        .select('amount')
+        .eq('couple_id', coupleId)
+        .gte('income_date', monthStart)
+        .lte('income_date', monthEnd),
+      userId,
+    ),
     // Los topes no dependen del mes: son recurrentes y se comparan contra
     // el gasto del mes consultado más abajo.
     supabaseAdmin.from('fin_budgets').select(BUDGET_SELECT).eq('couple_id', coupleId),
@@ -226,29 +240,69 @@ export async function getDashboardSummary(
  * Lee las vistas fin_available_now y fin_card_debt (ver 0007_finanzas.sql),
  * donde vive la regla de qué parte de la tarjeta sigue impaga.
  */
-export async function getAvailableSummary(coupleId: string): Promise<AvailableSummary> {
-  const [totalsRes, cardsRes] = await Promise.all([
-    supabaseAdmin
-      .from('fin_available_now')
-      .select('currency, liquid, card_debt, available')
-      .eq('couple_id', coupleId)
-      .order('currency'),
+export async function getAvailableSummary(
+  coupleId: string,
+  userId?: string,
+): Promise<AvailableSummary> {
+  const cardsRes = await soloDe(
     supabaseAdmin
       .from('fin_card_debt')
       .select('account_id, name, currency, unpaid_since, debt')
-      .eq('couple_id', coupleId)
-      .order('name'),
-  ]);
-  if (totalsRes.error) throw totalsRes.error;
+      .eq('couple_id', coupleId),
+    userId,
+    'owner_id',
+  ).order('name');
   if (cardsRes.error) throw cardsRes.error;
+  const cards = (cardsRes.data ?? []).map((row) => ({ ...row, debt: Number(row.debt) }));
+
+  if (!userId) {
+    const totalsRes = await supabaseAdmin
+      .from('fin_available_now')
+      .select('currency, liquid, card_debt, available')
+      .eq('couple_id', coupleId)
+      .order('currency');
+    if (totalsRes.error) throw totalsRes.error;
+    return {
+      totals: (totalsRes.data ?? []).map((row) => ({
+        currency: row.currency,
+        liquid: Number(row.liquid),
+        card_debt: Number(row.card_debt),
+        available: Number(row.available),
+      })),
+      cards,
+    };
+  }
+
+  // Una persona: saldo de sus cuentas menos la deuda de sus tarjetas, con
+  // la misma regla que fin_available_now.
+  const accountsRes = await supabaseAdmin
+    .from('fin_accounts')
+    .select('balance, balance_currency')
+    .eq('couple_id', coupleId)
+    .eq('owner_id', userId)
+    .eq('active', true)
+    .neq('type', 'credit_card')
+    .not('balance', 'is', null);
+  if (accountsRes.error) throw accountsRes.error;
+
+  const byCurrency = new Map<'ARS' | 'USD', { liquid: number; card_debt: number }>();
+  const entry = (currency: 'ARS' | 'USD') => {
+    const current = byCurrency.get(currency) ?? { liquid: 0, card_debt: 0 };
+    byCurrency.set(currency, current);
+    return current;
+  };
+  for (const row of accountsRes.data ?? []) entry(row.balance_currency).liquid += Number(row.balance);
+  for (const card of cards) entry(card.currency).card_debt += card.debt;
 
   return {
-    totals: (totalsRes.data ?? []).map((row) => ({
-      currency: row.currency,
-      liquid: Number(row.liquid),
-      card_debt: Number(row.card_debt),
-      available: Number(row.available),
-    })),
-    cards: (cardsRes.data ?? []).map((row) => ({ ...row, debt: Number(row.debt) })),
+    totals: [...byCurrency.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([currency, t]) => ({
+        currency,
+        liquid: round2(t.liquid),
+        card_debt: round2(t.card_debt),
+        available: round2(t.liquid - t.card_debt),
+      })),
+    cards,
   };
 }

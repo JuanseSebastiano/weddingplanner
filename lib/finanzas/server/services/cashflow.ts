@@ -7,6 +7,7 @@ import {
   type Paginated,
 } from '@nf/shared';
 import { supabaseAdmin } from '../lib/supabase';
+import { soloDe } from '../lib/persona';
 import { getMonthlyDeposits } from './savings';
 import {
   buildTrend,
@@ -43,27 +44,34 @@ const MERGE_LIMIT = 4000;
 export async function getCashflowSummary(
   coupleId: string,
   month: string,
+  userId?: string,
 ): Promise<CashflowSummary> {
   const trendStart = monthBounds(addMonths(month, -(TREND_MONTHS - 1))).start;
   const { end: monthEnd } = monthBounds(month);
   const previous = addMonths(month, -1);
 
   const [incomesRes, expensesRes, categoriesRes, savingsTotal] = await Promise.all([
-    supabaseAdmin
-      .from('fin_incomes')
-      .select('amount, income_date, category_id')
-      .eq('couple_id', coupleId)
-      .gte('income_date', trendStart)
-      .lte('income_date', monthEnd),
-    supabaseAdmin
-      .from('fin_expenses')
-      .select('amount, expense_date, category_id')
-      .eq('couple_id', coupleId)
-      .eq('status', 'confirmed')
-      .gte('expense_date', trendStart)
-      .lte('expense_date', monthEnd),
+    soloDe(
+      supabaseAdmin
+        .from('fin_incomes')
+        .select('amount, income_date, category_id')
+        .eq('couple_id', coupleId)
+        .gte('income_date', trendStart)
+        .lte('income_date', monthEnd),
+      userId,
+    ),
+    soloDe(
+      supabaseAdmin
+        .from('fin_expenses')
+        .select('amount, expense_date, category_id')
+        .eq('couple_id', coupleId)
+        .eq('status', 'confirmed')
+        .gte('expense_date', trendStart)
+        .lte('expense_date', monthEnd),
+      userId,
+    ),
     supabaseAdmin.from('fin_categories').select('id, name, color').eq('couple_id', coupleId),
-    getMonthlyDeposits(coupleId, month),
+    getMonthlyDeposits(coupleId, month, userId),
   ]);
 
   for (const res of [incomesRes, expensesRes, categoriesRes]) {

@@ -1,5 +1,6 @@
 import { currentMonth, type SavingsCash, type SavingsMovementWithRelations } from '@nf/shared';
 import { supabaseAdmin } from '../lib/supabase';
+import { soloDe } from '../lib/persona';
 import { summarizeCash, type MovementRow } from './savings-math';
 
 export const SAVINGS_SELECT = `
@@ -28,11 +29,14 @@ export const EMPTY_CASH: SavingsCash = {
   deposited_this_month: 0,
 };
 
-export async function listMovements(coupleId: string): Promise<SavingsMovementWithRelations[]> {
-  const { data, error } = await supabaseAdmin
-    .from('fin_savings_movements')
-    .select(SAVINGS_SELECT)
-    .eq('couple_id', coupleId)
+export async function listMovements(
+  coupleId: string,
+  userId?: string,
+): Promise<SavingsMovementWithRelations[]> {
+  const { data, error } = await soloDe(
+    supabaseAdmin.from('fin_savings_movements').select(SAVINGS_SELECT).eq('couple_id', coupleId),
+    userId,
+  )
     .order('moved_at', { ascending: false })
     .order('created_at', { ascending: false });
 
@@ -62,11 +66,15 @@ export async function getMovement(
  * Estado de la caja. Trae solo las tres columnas que hacen falta para la
  * cuenta, no los joins del listado.
  */
-export async function getCash(coupleId: string, month = currentMonth()): Promise<SavingsCash> {
-  const { data, error } = await supabaseAdmin
-    .from('fin_savings_movements')
-    .select('kind, amount, moved_at')
-    .eq('couple_id', coupleId);
+export async function getCash(
+  coupleId: string,
+  month = currentMonth(),
+  userId?: string,
+): Promise<SavingsCash> {
+  const { data, error } = await soloDe(
+    supabaseAdmin.from('fin_savings_movements').select('kind, amount, moved_at').eq('couple_id', coupleId),
+    userId,
+  );
 
   if (error) {
     if (isMissingTable(error)) return EMPTY_CASH;
@@ -76,6 +84,10 @@ export async function getCash(coupleId: string, month = currentMonth()): Promise
 }
 
 /** Lo apartado en un mes concreto, para el resumen de Balance. */
-export async function getMonthlyDeposits(coupleId: string, month: string): Promise<number> {
-  return (await getCash(coupleId, month)).deposited_this_month;
+export async function getMonthlyDeposits(
+  coupleId: string,
+  month: string,
+  userId?: string,
+): Promise<number> {
+  return (await getCash(coupleId, month, userId)).deposited_this_month;
 }

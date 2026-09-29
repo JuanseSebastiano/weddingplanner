@@ -1,5 +1,6 @@
 import type { CommitmentsSummary, Commitment } from '@nf/shared';
 import { supabaseAdmin } from '../lib/supabase';
+import { getAvailableSummary } from './dashboard';
 
 /**
  * Compromisos futuros (vista fin_commitments: boda, viaje y tarjetas),
@@ -7,19 +8,30 @@ import { supabaseAdmin } from '../lib/supabase';
  *
  * Para comparar monedas todo se lleva a pesos: con la cotización del
  * propio pago si la tiene, o con la de referencia de la boda.
+ *
+ * Con una persona elegida, de las tarjetas solo quedan las suyas y el
+ * disponible es el de sus cuentas; boda y viaje son de la pareja.
  */
-export async function getCommitmentsSummary(coupleId: string): Promise<CommitmentsSummary> {
-  const [commitmentsRes, availableRes, budgetRes, weddingRes] = await Promise.all([
+export async function getCommitmentsSummary(
+  coupleId: string,
+  userId?: string,
+): Promise<CommitmentsSummary> {
+  const [commitmentsRes, available, budgetRes, weddingRes, cardsRes] = await Promise.all([
     supabaseAdmin
       .from('fin_commitments')
       .select('source, ref_id, due_date, amount, currency, fx_rate, label, href')
       .eq('couple_id', coupleId)
       .order('due_date', { ascending: true, nullsFirst: false }),
-    supabaseAdmin.from('fin_available_now').select('currency, available').eq('couple_id', coupleId),
+    getAvailableSummary(coupleId, userId),
     supabaseAdmin.from('trip_budget').select('currency, total, paid, pending').eq('couple_id', coupleId),
     supabaseAdmin.from('wedding_info').select('cotizacion_referencia').eq('couple_id', coupleId).maybeSingle(),
+    supabaseAdmin
+      .from('fin_accounts')
+      .select('id')
+      .eq('couple_id', coupleId)
+      .eq('owner_id', userId ?? '00000000-0000-0000-0000-000000000000'),
   ]);
-  for (const res of [commitmentsRes, availableRes, budgetRes, weddingRes]) {
+  for (const res of [commitmentsRes, budgetRes, weddingRes, cardsRes]) {
     if (res.error) throw res.error;
   }
 
@@ -27,7 +39,10 @@ export async function getCommitmentsSummary(coupleId: string): Promise<Commitmen
   const toArs = (amount: number, currency: string, fx: number | null) =>
     currency === 'ARS' ? amount : amount * (fx ?? referenceRate ?? 0);
 
-  const commitments: Commitment[] = (commitmentsRes.data ?? []).map((row) => ({
+  const ownCards = new Set((cardsRes.data ?? []).map((row) => row.id));
+  const commitments: Commitment[] = (commitmentsRes.data ?? [])
+    .filter((row) => !userId || row.source !== 'tarjeta' || ownCards.has(row.ref_id))
+    .map((row) => ({
     source: row.source,
     ref_id: row.ref_id,
     due_date: row.due_date,
@@ -38,7 +53,7 @@ export async function getCommitmentsSummary(coupleId: string): Promise<Commitmen
     href: row.href,
   }));
 
-  const availableArs = (availableRes.data ?? []).reduce(
+  const availableArs = available.totals.reduce(
     (acc, row) => acc + toArs(Number(row.available), row.currency, null),
     0,
   );
