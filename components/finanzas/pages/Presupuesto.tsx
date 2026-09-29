@@ -36,8 +36,8 @@ export function PresupuestoPage() {
   const { boda, viaje, pagos, ahorro } = data;
   const cotizacion = boda?.cotizacion ?? ahorro.cotizacion;
   const aArs = (monto: number, moneda: 'ARS' | 'USD') => (moneda === 'USD' ? monto * (cotizacion ?? 0) : monto);
-  const totalArs = (boda?.previsto.ars ?? 0) + viaje.reduce((acc, v) => acc + aArs(v.total, v.currency), 0);
-  const faltaArs = totalArs - ahorro.total_ars;
+  const pendienteArs = (boda?.pendiente.ars ?? 0) + viaje.reduce((acc, v) => acc + aArs(v.pending, v.currency), 0);
+  const faltaArs = pendienteArs - ahorro.total_ars;
   const today = new Date().toISOString().slice(0, 10);
   const porMes = new Map<string, Commitment[]>();
   for (const p of pagos) {
@@ -68,12 +68,12 @@ export function PresupuestoPage() {
         <div className="h-2 overflow-hidden rounded-full bg-sunken">
           <div
             className="h-full rounded-full bg-accent"
-            style={{ width: `${totalArs > 0 ? Math.min(100, (ahorro.total_ars / totalArs) * 100) : 0}%` }}
+            style={{ width: `${pendienteArs > 0 ? Math.min(100, (ahorro.total_ars / pendienteArs) * 100) : 0}%` }}
           />
         </div>
         <div className="grid grid-cols-2 gap-4 border-t border-wash/[0.08] pt-4">
           {[
-            { label: 'Presupuesto total', ars: totalArs },
+            { label: 'Falta pagar', ars: pendienteArs },
             { label: 'Ahorrado', ars: ahorro.total_ars },
           ].map((f) => (
             <div key={f.label} className="flex flex-col gap-0.5">
@@ -85,7 +85,7 @@ export function PresupuestoPage() {
             </div>
           ))}
         </div>
-        <span className="text-xs text-ink-faint">Boda + viaje</span>
+        <span className="text-xs text-ink-faint">Falta pagar de boda + viaje, sin contar lo ya pagado</span>
       </div>
 
       <div className="grid gap-[18px] sm:grid-cols-2">
