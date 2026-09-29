@@ -606,7 +606,7 @@ function AccountMoneyFields({ account, editable }: { account: Account; editable:
 
   function start() {
     setFirst(String((isCard ? account.closing_day : account.balance) ?? ''));
-    setSecond(String((isCard ? account.due_day : account.balance_currency) ?? 'ARS'));
+    setSecond(isCard ? String(account.due_day ?? '') : account.balance_currency);
     setEditing(true);
   }
 
