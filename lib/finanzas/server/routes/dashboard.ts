@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { currentMonth } from '@nf/shared';
 import { asyncHandler, badRequest } from '../lib/errors';
 import type { AuthedRequest } from '../middleware/auth';
+import { personaDe } from '../lib/persona';
 import { getAvailableSummary, getDashboardSummary } from '../services/dashboard';
 import { getCommitmentsSummary } from '../services/commitments';
 
@@ -24,6 +25,7 @@ dashboardRouter.get(
     const summary = await getDashboardSummary(
       req.auth.coupleId,
       parsed.data.month ?? currentMonth(),
+      personaDe(req),
     );
     res.json(summary);
   }),
@@ -33,7 +35,7 @@ dashboardRouter.get(
 dashboardRouter.get(
   '/available',
   asyncHandler<AuthedRequest>(async (req, res) => {
-    res.json(await getAvailableSummary(req.auth.coupleId));
+    res.json(await getAvailableSummary(req.auth.coupleId, personaDe(req)));
   }),
 );
 
@@ -41,6 +43,6 @@ dashboardRouter.get(
 dashboardRouter.get(
   '/commitments',
   asyncHandler<AuthedRequest>(async (req, res) => {
-    res.json(await getCommitmentsSummary(req.auth.coupleId));
+    res.json(await getCommitmentsSummary(req.auth.coupleId, personaDe(req)));
   }),
 );

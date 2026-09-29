@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { supabaseAdmin } from '../lib/supabase';
 import { asyncHandler, badRequest, conflict, forbidden, notFound } from '../lib/errors';
 import type { AuthedRequest } from '../middleware/auth';
+import { personaDe } from '../lib/persona';
 import { getHolding, HOLDING_SELECT, listHoldings } from '../services/holdings';
 
 const holdingInputSchema = z.object({
@@ -23,7 +24,7 @@ export const holdingsRouter = Router();
 holdingsRouter.get(
   '/',
   asyncHandler<AuthedRequest>(async (req, res) => {
-    res.json(await listHoldings(req.auth.coupleId));
+    res.json(await listHoldings(req.auth.coupleId, personaDe(req)));
   }),
 );
 

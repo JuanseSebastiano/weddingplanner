@@ -4,6 +4,7 @@ import type { PendingExpense } from '@nf/shared';
 import { supabaseAdmin } from '../lib/supabase';
 import { asyncHandler, badRequest, forbidden, notFound } from '../lib/errors';
 import type { AuthedRequest } from '../middleware/auth';
+import { personaDe, soloDe } from '../lib/persona';
 import { assertBelongsToHousehold, EXPENSE_SELECT } from '../services/expenses';
 
 /**
@@ -36,12 +37,14 @@ export const reviewRouter = Router();
 reviewRouter.get(
   '/',
   asyncHandler<AuthedRequest>(async (req, res) => {
-    const { data, error } = await supabaseAdmin
-      .from('fin_expenses')
-      .select(PENDING_SELECT)
-      .eq('couple_id', req.auth.coupleId)
-      .eq('status', 'pending')
-      .order('created_at', { ascending: false });
+    const { data, error } = await soloDe(
+      supabaseAdmin
+        .from('fin_expenses')
+        .select(PENDING_SELECT)
+        .eq('couple_id', req.auth.coupleId)
+        .eq('status', 'pending'),
+      personaDe(req),
+    ).order('created_at', { ascending: false });
 
     if (error) throw error;
     res.json((data ?? []) as unknown as PendingExpense[]);

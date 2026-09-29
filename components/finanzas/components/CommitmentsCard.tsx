@@ -41,7 +41,7 @@ export function CommitmentsCard() {
           <span className="eyebrow">COMPROMISOS FUTUROS</span>
           <ul className="m-0 flex list-none flex-col gap-2 p-0">
             {commitments.slice(0, VISIBLES).map((c) => (
-              <li key={`${c.source}-${c.ref_id}-${c.currency}`}>
+              <li key={`${c.source}-${c.ref_id}-${c.currency}-${c.due_date}`}>
                 <Link href={c.href} className="flex items-center justify-between gap-3 text-[13px]">
                   <span className="flex min-w-0 flex-col">
                     <span className="truncate text-ink-primary">{c.label}</span>

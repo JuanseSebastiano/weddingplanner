@@ -42,7 +42,6 @@ const PAGE_SIZE = 25;
 export function BalancePage() {
   const [month, setMonth] = useState(currentMonth());
   const [kind, setKind] = useState<LedgerKind | ''>('');
-  const [userId, setUserId] = useState('');
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<IncomeWithRelations | null>(null);
@@ -61,7 +60,6 @@ export function BalancePage() {
     from: start,
     to: end,
     ...(kind ? { kind } : {}),
-    ...(userId ? { user_id: userId } : {}),
     page,
     page_size: PAGE_SIZE,
   };
@@ -253,22 +251,6 @@ export function BalancePage() {
             </button>
           ))}
         </div>
-
-        <select
-          className="input w-auto min-w-[130px]"
-          value={userId}
-          onChange={(event) => {
-            setUserId(event.target.value);
-            setPage(1);
-          }}
-        >
-          <option value="">Quién: todos</option>
-          {(me.data?.members ?? []).map((member) => (
-            <option key={member.id} value={member.id}>
-              {member.display_name}
-            </option>
-          ))}
-        </select>
 
         <span className="ml-auto font-mono text-[10.5px] tracking-[0.08em] text-ink-faint">
           {total} {total === 1 ? 'MOVIMIENTO' : 'MOVIMIENTOS'}

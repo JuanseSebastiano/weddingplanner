@@ -77,13 +77,6 @@ export function ExpensesPage() {
       clear: () => update({ from: undefined, to: undefined }),
     });
   }
-  if (filters.user_id) {
-    const member = me.data?.members.find((m) => m.id === filters.user_id);
-    activeChips.push({
-      label: member?.display_name ?? 'persona',
-      clear: () => update({ user_id: undefined }),
-    });
-  }
   if (filters.category_id) {
     const category = catalog.find((c) => c.id === filters.category_id);
     activeChips.push({
@@ -157,19 +150,6 @@ export function ExpensesPage() {
             value={filters.search ?? ''}
             onChange={(event) => update({ search: event.target.value || undefined })}
           />
-
-          <select
-            className="input w-auto min-w-[130px]"
-            value={filters.user_id ?? ''}
-            onChange={(event) => update({ user_id: event.target.value || undefined })}
-          >
-            <option value="">Quién: todos</option>
-            {(me.data?.members ?? []).map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.display_name}
-              </option>
-            ))}
-          </select>
 
           <select
             className="input w-auto min-w-[130px]"

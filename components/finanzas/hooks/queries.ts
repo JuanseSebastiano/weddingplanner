@@ -26,6 +26,7 @@ import type {
   SavingsOverview,
 } from '@nf/shared';
 import { api, toQueryString } from '../lib/api';
+import { usePersona } from '../persona';
 
 export interface MeResponse {
   user: { id: string; email: string | null; display_name: string };
@@ -99,54 +100,64 @@ export function useMe() {
 }
 
 export function useDashboard(month: string) {
+  const user_id = usePersona();
   return useQuery({
-    queryKey: ['dashboard', month],
-    queryFn: () => api.get<DashboardSummary>(`/dashboard${toQueryString({ month })}`),
+    queryKey: ['dashboard', month, user_id],
+    queryFn: () => api.get<DashboardSummary>(`/dashboard${toQueryString({ month, user_id })}`),
   });
 }
 
 export function useAvailable() {
+  const user_id = usePersona();
   return useQuery({
-    queryKey: ['available'],
-    queryFn: () => api.get<AvailableSummary>('/dashboard/available'),
+    queryKey: ['available', user_id],
+    queryFn: () => api.get<AvailableSummary>(`/dashboard/available${toQueryString({ user_id })}`),
   });
 }
 
 export function useCommitments() {
+  const user_id = usePersona();
   return useQuery({
-    queryKey: ['commitments'],
-    queryFn: () => api.get<CommitmentsSummary>('/dashboard/commitments'),
+    queryKey: ['commitments', user_id],
+    queryFn: () => api.get<CommitmentsSummary>(`/dashboard/commitments${toQueryString({ user_id })}`),
   });
 }
 
 export function useExpenses(filters: ExpenseFilters) {
+  const persona = usePersona();
+  const withPersona = persona ? { ...filters, user_id: persona } : filters;
   return useQuery({
-    queryKey: ['expenses', filters],
+    queryKey: ['expenses', withPersona],
     queryFn: () =>
-      api.get<Paginated<ExpenseWithRelations>>(`/expenses${toQueryString({ ...filters })}`),
+      api.get<Paginated<ExpenseWithRelations>>(`/expenses${toQueryString({ ...withPersona })}`),
     placeholderData: (previous) => previous,
   });
 }
 
 export function useCashflow(month: string) {
+  const user_id = usePersona();
   return useQuery({
-    queryKey: ['cashflow', month],
-    queryFn: () => api.get<CashflowSummary>(`/cashflow${toQueryString({ month })}`),
+    queryKey: ['cashflow', month, user_id],
+    queryFn: () => api.get<CashflowSummary>(`/cashflow${toQueryString({ month, user_id })}`),
   });
 }
 
 export function useLedger(filters: LedgerFilters) {
+  const persona = usePersona();
+  const withPersona = persona ? { ...filters, user_id: persona } : filters;
   return useQuery({
-    queryKey: ['ledger', filters],
-    queryFn: () => api.get<Paginated<LedgerEntry>>(`/cashflow/ledger${toQueryString({ ...filters })}`),
+    queryKey: ['ledger', withPersona],
+    queryFn: () => api.get<Paginated<LedgerEntry>>(`/cashflow/ledger${toQueryString({ ...withPersona })}`),
     placeholderData: (previous) => previous,
   });
 }
 
 export function useIncomes(filters: IncomeFilters) {
+  const persona = usePersona();
+  const withPersona = persona ? { ...filters, user_id: persona } : filters;
   return useQuery({
-    queryKey: ['incomes', filters],
-    queryFn: () => api.get<Paginated<IncomeWithRelations>>(`/incomes${toQueryString({ ...filters })}`),
+    queryKey: ['incomes', withPersona],
+    queryFn: () => api.get<Paginated<IncomeWithRelations>>(`/incomes${toQueryString({ ...withPersona })}`),
     placeholderData: (previous) => previous,
   });
 }
@@ -170,7 +181,11 @@ export function useCategoriesByKind(kind: CategoryKind) {
 }
 
 export function useSavings() {
-  return useQuery({ queryKey: ['savings'], queryFn: () => api.get<SavingsOverview>('/savings') });
+  const user_id = usePersona();
+  return useQuery({
+    queryKey: ['savings', user_id],
+    queryFn: () => api.get<SavingsOverview>(`/savings${toQueryString({ user_id })}`),
+  });
 }
 
 export function useBudgets() {
@@ -185,7 +200,11 @@ export function useAccounts() {
 }
 
 export function usePendingExpenses() {
-  return useQuery({ queryKey: ['review'], queryFn: () => api.get<PendingExpense[]>('/review') });
+  const user_id = usePersona();
+  return useQuery({
+    queryKey: ['review', user_id],
+    queryFn: () => api.get<PendingExpense[]>(`/review${toQueryString({ user_id })}`),
+  });
 }
 
 export function useRules() {
@@ -203,16 +222,18 @@ export function useIngestionLog() {
 }
 
 export function useHoldings() {
+  const user_id = usePersona();
   return useQuery({
-    queryKey: ['holdings'],
-    queryFn: () => api.get<HoldingWithRelations[]>('/holdings'),
+    queryKey: ['holdings', user_id],
+    queryFn: () => api.get<HoldingWithRelations[]>(`/holdings${toQueryString({ user_id })}`),
   });
 }
 
 export function usePortfolio() {
+  const user_id = usePersona();
   return useQuery({
-    queryKey: ['portfolio'],
-    queryFn: () => api.get<PortfolioSummary>('/portfolio'),
+    queryKey: ['portfolio', user_id],
+    queryFn: () => api.get<PortfolioSummary>(`/portfolio${toQueryString({ user_id })}`),
     // La cotización se cachea 5 minutos en el backend: pedirla más seguido
     // solo agrega requests que van a devolver el mismo número.
     refetchInterval: 5 * 60 * 1000,

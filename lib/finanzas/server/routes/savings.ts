@@ -4,6 +4,7 @@ import { formatCurrency } from '@nf/shared';
 import { supabaseAdmin } from '../lib/supabase';
 import { asyncHandler, badRequest, forbidden, notFound } from '../lib/errors';
 import type { AuthedRequest } from '../middleware/auth';
+import { personaDe } from '../lib/persona';
 import { HOLDING_SELECT } from '../services/holdings';
 import { getCash, getMovement, listMovements, SAVINGS_SELECT } from '../services/savings';
 import { investmentAmount, mergePosition, type Position } from '../services/savings-math';
@@ -36,9 +37,10 @@ export const savingsRouter = Router();
 savingsRouter.get(
   '/',
   asyncHandler<AuthedRequest>(async (req, res) => {
+    const userId = personaDe(req);
     const [movements, cash] = await Promise.all([
-      listMovements(req.auth.coupleId),
-      getCash(req.auth.coupleId),
+      listMovements(req.auth.coupleId, userId),
+      getCash(req.auth.coupleId, undefined, userId),
     ]);
     res.json({ movements, cash });
   }),
