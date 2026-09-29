@@ -112,6 +112,25 @@ export interface Expense {
   fxRate: number | null
 }
 
+/** Ítems con precio que pueden pagarse en cuotas. */
+export type ItemTipo = 'flight' | 'train' | 'booking' | 'cruise'
+
+/**
+ * Cuota de un ítem con precio. Si un ítem tiene cuotas, su amount es el
+ * total a pagar y lo pagado es la suma de las cuotas pagadas.
+ */
+export interface Payment {
+  id?: string
+  itemTipo: ItemTipo
+  itemId: string
+  fecha: string
+  amount: number
+  currency: Moneda
+  fxRate: number | null
+  paid: boolean
+  notas: string
+}
+
 export interface OutboxEntry {
   key: string // `${tabla}:${id}`
   table: TableName
@@ -133,6 +152,7 @@ export const db = new Dexie('Viaje') as Dexie & {
   hotels: EntityTable<Hotel, 'id'>
   cruise: EntityTable<Cruise, 'id'>
   expenses: EntityTable<Expense, 'id'>
+  payments: EntityTable<Payment, 'id'>
   outbox: EntityTable<OutboxEntry, 'key'>
   meta: EntityTable<Meta, 'key'>
 }
@@ -149,6 +169,10 @@ db.version(1).stores({
   meta: 'key',
 })
 
+db.version(2).stores({
+  payments: 'id, itemId, fecha',
+})
+
 /** Tablas locales y su tabla en Supabase. */
 export const TABLES = {
   trips: 'trip_trips',
@@ -158,6 +182,7 @@ export const TABLES = {
   hotels: 'trip_bookings',
   cruise: 'trip_cruises',
   expenses: 'trip_expenses',
+  payments: 'trip_payments',
 } as const
 
 export type TableName = keyof typeof TABLES

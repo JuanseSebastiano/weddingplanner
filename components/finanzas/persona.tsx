@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import { useMe } from './hooks/queries';
 
 /**
@@ -40,8 +41,10 @@ export function usePersona(): string {
 export function PersonaSelector() {
   const { persona, setPersona } = useContext(PersonaContext);
   const me = useMe();
+  const pathname = usePathname();
   const members = me.data?.members ?? [];
-  if (members.length < 2) return null;
+  // Presupuesto es de la pareja: el selector no cambia nada ahí.
+  if (members.length < 2 || pathname === '/finanzas/presupuesto') return null;
 
   const opciones = [{ id: '', display_name: 'Todos' }, ...members];
   return (

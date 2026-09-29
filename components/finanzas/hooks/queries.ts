@@ -21,6 +21,7 @@ import type {
   Paginated,
   PendingExpense,
   PortfolioSummary,
+  PresupuestoSummary,
   RuleInput,
   SavingsMovementInput,
   SavingsOverview,
@@ -120,6 +121,13 @@ export function useCommitments() {
   return useQuery({
     queryKey: ['commitments', user_id],
     queryFn: () => api.get<CommitmentsSummary>(`/dashboard/commitments${toQueryString({ user_id })}`),
+  });
+}
+
+export function usePresupuesto() {
+  return useQuery({
+    queryKey: ['presupuesto'],
+    queryFn: () => api.get<PresupuestoSummary>('/dashboard/presupuesto'),
   });
 }
 

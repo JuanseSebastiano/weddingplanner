@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import type { Precio } from './db'
+import { EstadoPago } from './cuotas'
 
 export function fmtDate(iso: string): string {
   if (!iso) return ''
@@ -144,11 +145,11 @@ export function conNota(notas: string, nota: string): string {
   return nota ? [notas, nota].filter(Boolean).join(' · ') : notas
 }
 
-export function PrecioMeta({ p }: { p: Precio }) {
+export function PrecioMeta({ p }: { p: Precio & { id?: string } }) {
   if (p.amount === null) return null
   return (
     <div>
-      💰 <strong>{fmtPrecio(p)}</strong> · {p.paid ? 'pagado' : p.dueDate ? `vence ${fmtDate(p.dueDate)}` : 'pendiente'}
+      💰 <strong>{fmtPrecio(p)}</strong> · <EstadoPago p={p} />
     </div>
   )
 }

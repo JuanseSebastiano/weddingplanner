@@ -65,7 +65,7 @@ export function CommitmentsCard() {
       )}
 
       {trip_budget.length > 0 && (
-        <Link href="/viaje/reservas" className="card flex flex-col gap-2 px-[22px] py-5">
+        <Link href="/finanzas/presupuesto" className="card flex flex-col gap-2 px-[22px] py-5">
           <span className="eyebrow">PRESUPUESTO DEL VIAJE</span>
           {trip_budget.map((b) => (
             <div key={b.currency} className="flex flex-wrap items-baseline justify-between gap-2 text-[13px]">

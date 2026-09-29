@@ -6,6 +6,7 @@ import type { AuthedRequest } from '../middleware/auth';
 import { personaDe } from '../lib/persona';
 import { getAvailableSummary, getDashboardSummary } from '../services/dashboard';
 import { getCommitmentsSummary } from '../services/commitments';
+import { getPresupuestoSummary } from '../services/presupuesto';
 
 const querySchema = z.object({
   month: z
@@ -44,5 +45,13 @@ dashboardRouter.get(
   '/commitments',
   asyncHandler<AuthedRequest>(async (req, res) => {
     res.json(await getCommitmentsSummary(req.auth.coupleId, personaDe(req)));
+  }),
+);
+
+/** Presupuesto de la boda y del viaje con sus pagos programados (de la pareja). */
+dashboardRouter.get(
+  '/presupuesto',
+  asyncHandler<AuthedRequest>(async (req, res) => {
+    res.json(await getPresupuestoSummary(req.auth.coupleId));
   }),
 );
