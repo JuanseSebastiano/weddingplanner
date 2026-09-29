@@ -125,3 +125,9 @@ union all
 select couple_id, 'tarjeta', account_id, due_date, amount, currency, null,
   'Resumen ' || name, '/finanzas/configuracion'
 from fin_card_next_due;
+
+-- Calendario de tareas ---------------------------------------------------
+-- Token del link privado (.ics) para suscribirse desde Google Calendar. Lo
+-- leen los integrantes por la policy couples_member; la ruta pública lo
+-- busca con service role.
+alter table couples add column calendar_token uuid not null default gen_random_uuid() unique;
