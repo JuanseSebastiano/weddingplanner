@@ -4,55 +4,68 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home,
-  Users,
-  Armchair,
+  Heart,
   Wallet,
-  CreditCard,
-  CheckSquare,
-  Briefcase,
-  Sparkles,
-  CalendarDays,
-  MoreHorizontal,
+  Plane,
+  LogOut,
+  type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { salir } from "@/app/(app)/actions";
 
-/** Todas las secciones. En escritorio se ven todas; en celular, las 4 primeras + "Más". */
-const SECCIONES = [
-  { href: "/", label: "Inicio", corto: "Inicio", icon: Home },
-  { href: "/invitados", label: "Invitados", corto: "Invitados", icon: Users },
-  { href: "/mesas", label: "Mesas", corto: "Mesas", icon: Armchair },
-  { href: "/presupuesto", label: "Presupuesto", corto: "Plata", icon: Wallet },
-  { href: "/pagos", label: "Pagos", corto: "Pagos", icon: CreditCard },
-  { href: "/tareas", label: "Tareas", corto: "Tareas", icon: CheckSquare },
-  {
-    href: "/proveedores",
-    label: "Proveedores",
-    corto: "Prov.",
-    icon: Briefcase,
-  },
-  { href: "/ideas", label: "Ideas", corto: "Ideas", icon: Sparkles },
-  {
-    href: "/agenda-del-dia",
-    label: "Agenda del día",
-    corto: "Agenda",
-    icon: CalendarDays,
-  },
+/** Módulos de la app: barra inferior en celular, menú lateral en escritorio. */
+const MODULOS: { href: string; label: string; icon: LucideIcon }[] = [
+  { href: "/", label: "Inicio", icon: Home },
+  { href: "/boda", label: "Boda", icon: Heart },
+  { href: "/finanzas", label: "Finanzas", icon: Wallet },
+  { href: "/viaje", label: "Viaje", icon: Plane },
 ];
 
-const TABS_MOBILE = ["/", "/invitados", "/presupuesto", "/tareas"];
+/** Secciones de cada módulo. En escritorio cuelgan del módulo; en celular, tira arriba. */
+const SECCIONES_BODA = [
+  { href: "/boda", label: "Resumen" },
+  { href: "/boda/invitados", label: "Invitados" },
+  { href: "/boda/mesas", label: "Mesas" },
+  { href: "/boda/presupuesto", label: "Presupuesto" },
+  { href: "/boda/pagos", label: "Pagos" },
+  { href: "/boda/tareas", label: "Tareas" },
+  { href: "/boda/proveedores", label: "Proveedores" },
+  { href: "/boda/comparador", label: "Comparador" },
+  { href: "/boda/ideas", label: "Ideas" },
+  { href: "/boda/agenda-del-dia", label: "Agenda del día" },
+];
 
-function esActiva(pathname: string, href: string) {
-  return href === "/" ? pathname === "/" : pathname.startsWith(href);
+const SECCIONES_FINANZAS = [
+  { href: "/finanzas", label: "Resumen" },
+  { href: "/finanzas/gastos", label: "Gastos" },
+  { href: "/finanzas/balance", label: "Ingresos y egresos" },
+  { href: "/finanzas/ahorros", label: "Ahorros" },
+  { href: "/finanzas/revision", label: "Revisión" },
+  { href: "/finanzas/configuracion", label: "Configuración" },
+];
+
+const SECCIONES_VIAJE = [
+  { href: "/viaje", label: "Itinerario" },
+  { href: "/viaje/vuelos", label: "Vuelos" },
+  { href: "/viaje/trenes", label: "Trenes" },
+  { href: "/viaje/reservas", label: "Reservas" },
+  { href: "/viaje/crucero", label: "Crucero" },
+  { href: "/viaje/gastos", label: "Gastos" },
+];
+
+const SECCIONES: Record<string, { href: string; label: string }[]> = {
+  "/boda": SECCIONES_BODA,
+  "/finanzas": SECCIONES_FINANZAS,
+  "/viaje": SECCIONES_VIAJE,
+};
+
+function esActiva(pathname: string, href: string, exacta = false) {
+  if (href === "/" || exacta) return pathname === href;
+  return pathname === href || pathname.startsWith(href + "/");
 }
 
 /** Menú lateral, sólo de 1024px para arriba. */
-export function Sidebar({
-  nombres,
-  fecha,
-}: {
-  nombres: string;
-  fecha: string;
-}) {
+export function Sidebar({ nombres }: { nombres: string }) {
   const pathname = usePathname();
 
   return (
@@ -64,48 +77,65 @@ export function Sidebar({
             .map((n) => n[0])
             .join("")}
         </span>
-        <span className="min-w-0">
-          <span className="block truncate font-serif text-[17px] leading-tight">
-            {nombres}
-          </span>
-          <span className="block text-[11.5px] leading-tight text-subtle">
-            {fecha}
-          </span>
+        <span className="min-w-0 truncate font-serif text-[17px] leading-tight">
+          {nombres}
         </span>
       </Link>
 
-      <nav className="flex flex-col gap-0.5">
-        {SECCIONES.map(({ href, label, icon: Icon }) => {
+      <nav className="flex flex-col gap-0.5 overflow-y-auto">
+        {MODULOS.map(({ href, label, icon: Icon }) => {
           const activa = esActiva(pathname, href);
           return (
-            <Link
-              key={href}
-              href={href}
-              aria-current={activa ? "page" : undefined}
-              className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] transition-colors",
-                activa
-                  ? "bg-primary-soft font-semibold text-primary-ink"
-                  : "font-medium text-muted-foreground hover:bg-muted",
+            <div key={href}>
+              <Link
+                href={href}
+                aria-current={activa ? "page" : undefined}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] transition-colors",
+                  activa
+                    ? "bg-primary-soft font-semibold text-primary-ink"
+                    : "font-medium text-muted-foreground hover:bg-muted",
+                )}
+              >
+                <Icon
+                  className="h-5 w-5 shrink-0"
+                  strokeWidth={activa ? 2.2 : 1.8}
+                />
+                {label}
+              </Link>
+              {SECCIONES[href] && activa && (
+                <div className="my-1 ml-6 flex flex-col border-l border-border-soft pl-2">
+                  {SECCIONES[href].map((s) => {
+                    const sub = esActiva(pathname, s.href, s.href === href);
+                    return (
+                      <Link
+                        key={s.href}
+                        href={s.href}
+                        aria-current={sub ? "page" : undefined}
+                        className={cn(
+                          "rounded-lg px-2.5 py-1.5 text-[13px]",
+                          sub
+                            ? "font-semibold text-primary-ink"
+                            : "text-muted-foreground hover:bg-muted",
+                        )}
+                      >
+                        {s.label}
+                      </Link>
+                    );
+                  })}
+                </div>
               )}
-            >
-              <Icon
-                className="h-5 w-5 shrink-0"
-                strokeWidth={activa ? 2.2 : 1.8}
-              />
-              {label}
-            </Link>
+            </div>
           );
         })}
       </nav>
 
-      <Link
-        href="/mas"
-        className="mt-auto flex items-center gap-2.5 border-t border-border-soft px-2.5 pt-3 text-xs text-muted-foreground hover:text-foreground"
-      >
-        <MoreHorizontal className="h-4 w-4 shrink-0" />
-        Más
-      </Link>
+      <form action={salir} className="mt-auto border-t border-border-soft pt-3">
+        <button className="flex items-center gap-2.5 px-2.5 text-xs text-muted-foreground hover:text-foreground">
+          <LogOut className="h-4 w-4 shrink-0" />
+          Cerrar sesión
+        </button>
+      </form>
     </aside>
   );
 }
@@ -113,14 +143,11 @@ export function Sidebar({
 /** Barra inferior, sólo por debajo de 1024px. */
 export function BottomNav() {
   const pathname = usePathname();
-  const tabs = TABS_MOBILE.map(
-    (href) => SECCIONES.find((s) => s.href === href)!,
-  );
 
   return (
     <nav className="no-print fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
       <ul className="mx-auto flex max-w-2xl">
-        {tabs.map(({ href, corto, icon: Icon }) => {
+        {MODULOS.map(({ href, label, icon: Icon }) => {
           const activa = esActiva(pathname, href);
           return (
             <li key={href} className="flex-1">
@@ -133,26 +160,42 @@ export function BottomNav() {
                 )}
               >
                 <Icon className="h-5 w-5" strokeWidth={activa ? 2.3 : 1.8} />
-                {corto}
+                {label}
               </Link>
             </li>
           );
         })}
-        <li className="flex-1">
-          <Link
-            href="/mas"
-            aria-current={pathname.startsWith("/mas") ? "page" : undefined}
-            className={cn(
-              "flex h-16 flex-col items-center justify-center gap-1 text-[11px]",
-              pathname.startsWith("/mas")
-                ? "font-semibold text-primary"
-                : "text-subtle",
-            )}
-          >
-            <MoreHorizontal className="h-5 w-5" strokeWidth={1.8} />
-            Más
-          </Link>
-        </li>
+      </ul>
+    </nav>
+  );
+}
+
+/** Tira de secciones de un módulo, sólo en celular (en escritorio están en el lateral). */
+export function ModuloTabs({ modulo }: { modulo: "/boda" | "/finanzas" | "/viaje" }) {
+  const pathname = usePathname();
+
+  return (
+    <nav className="no-print -mx-4 mb-4 overflow-x-auto px-4 lg:hidden">
+      <ul className="flex w-max gap-1.5">
+        {SECCIONES[modulo].map((s) => {
+          const activa = esActiva(pathname, s.href, s.href === modulo);
+          return (
+            <li key={s.href}>
+              <Link
+                href={s.href}
+                aria-current={activa ? "page" : undefined}
+                className={cn(
+                  "block whitespace-nowrap rounded-full border px-3 py-1.5 text-[13px]",
+                  activa
+                    ? "border-primary bg-primary-soft font-semibold text-primary-ink"
+                    : "border-border bg-card text-muted-foreground",
+                )}
+              >
+                {s.label}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );

@@ -1,4 +1,4 @@
-import type { NuevoInvitado } from "@/app/(app)/invitados/actions";
+import type { NuevoInvitado } from "@/app/(app)/boda/invitados/actions";
 
 /**
  * Parsea texto pegado desde una planilla o un CSV.

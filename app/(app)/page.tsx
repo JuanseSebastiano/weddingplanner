@@ -1,610 +1,18 @@
 import Link from "next/link";
-import Image from "next/image";
-import { AlertTriangle, ChevronRight, CalendarDays, Clock } from "lucide-react";
-import portada from "@/public/portada.jpg";
+import { ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getWedding } from "@/lib/wedding";
+import { getCommitmentsSummary } from "@/lib/finanzas/server/services/commitments";
 import { Card, CardTitle, Eyebrow } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  formatFecha,
-  formatMonto,
-  hoyISO,
-  diasHasta,
-  RUBRO_LABEL,
-} from "@/lib/format";
-import {
-  agruparPorCategoria,
-  sumar,
-  CERO,
-  type Item,
-  type Pago,
-} from "@/lib/plata";
+import { Button } from "@/components/ui/button";
+import { diasHasta, formatFecha, formatMonto, hoyISO } from "@/lib/format";
+import { salir } from "./actions";
 
-export default async function DashboardPage() {
-  const supabase = await createClient();
-
-  // Todo en paralelo: la base está en San Pablo y cada viaje se nota en el celular.
-  const [
-    wedding,
-    { data: items },
-    { data: pagos },
-    { data: guests },
-    { data: tables },
-    { data: tasks },
-    { data: vendors },
-    { data: ideas },
-    { count: actividades },
-  ] = await Promise.all([
-    getWedding(),
-    supabase
-      .from("budget_items")
-      .select(
-        "id, categoria, concepto, monto_estimado, monto_real, moneda, vendor_id",
-      ),
-    supabase
-      .from("payments")
-      .select(
-        "id, budget_item_id, monto, moneda, cotizacion_usd, fecha, medio_pago, tipo, comprobante_path, pagado",
-      ),
-    supabase.from("guests").select("rsvp, acompanantes, menu, table_id"),
-    supabase.from("tables").select("id, capacidad"),
-    supabase.from("tasks").select("id, titulo, estado, fecha_limite"),
-    supabase.from("vendors").select("estado"),
-    supabase.from("ideas").select("estado"),
-    supabase
-      .from("timeline_events")
-      .select("id", { count: "exact", head: true }),
-  ]);
-
-  const hoy = hoyISO();
-  const dias = diasHasta(wedding.fecha);
-  const cot = wedding.cotizacion_referencia;
-
-  /* ---- plata ---- */
-  const categorias = agruparPorCategoria(
-    (items ?? []) as Item[],
-    (pagos ?? []) as Pago[],
-    cot,
-  );
-  const pagado = categorias.reduce((a, c) => sumar(a, c.pagado), CERO);
-  const previsto = categorias.reduce((a, c) => sumar(a, c.previsto), CERO);
-  const objetivoUSD =
-    wedding.moneda_base === "USD"
-      ? wedding.presupuesto_objetivo
-      : wedding.presupuesto_objetivo / cot;
-  const usado = objetivoUSD > 0 ? pagado.usd / objetivoUSD : 0;
-  const maxCategoria = Math.max(1, ...categorias.map((c) => c.previsto.usd));
-
-  /* ---- invitados y mesas ---- */
-  const g = guests ?? [];
-  const personas = g.reduce((n, x) => n + 1 + x.acompanantes, 0);
-  const confirmados = g
-    .filter((x) => x.rsvp === "confirmado")
-    .reduce((n, x) => n + 1 + x.acompanantes, 0);
-  const pendientes = g.filter((x) => x.rsvp === "pendiente").length;
-  const rechazados = g.filter((x) => x.rsvp === "rechazado").length;
-  const menusEspeciales = g.filter((x) => x.menu !== "ninguno").length;
-  const sinMesa = g.filter((x) => !x.table_id).length;
-  const lugares = (tables ?? []).reduce((n, t) => n + t.capacidad, 0);
-  const ocupados = g
-    .filter((x) => x.table_id)
-    .reduce((n, x) => n + 1 + x.acompanantes, 0);
-
-  /* ---- tareas ---- */
-  const t = tasks ?? [];
-  const hechas = t.filter((x) => x.estado === "hecha").length;
-  const abiertas = t.filter((x) => x.estado !== "hecha");
-  const vencidas = abiertas.filter(
-    (x) => x.fecha_limite && x.fecha_limite < hoy,
-  );
-  const en7 = sumarDias(hoy, 7);
-  const estaSemana = abiertas.filter(
-    (x) => x.fecha_limite && x.fecha_limite >= hoy && x.fecha_limite <= en7,
-  );
-
-  /* ---- pagos ---- */
-  const en30 = sumarDias(hoy, 30);
-  const proximos = ((pagos ?? []) as Pago[])
-    .filter((p) => !p.pagado && p.fecha <= en30)
-    .sort((a, b) => a.fecha.localeCompare(b.fecha));
-  const totalProximos = proximos.reduce(
-    (n, p) =>
-      n + (p.moneda === "USD" ? p.monto : p.monto / (p.cotizacion_usd ?? cot)),
-    0,
-  );
-  const conceptoDe = (id: string) =>
-    (items ?? []).find((i) => i.id === id)?.concepto ?? "Ítem borrado";
-
-  /* ---- proveedores e ideas ---- */
-  const v = vendors ?? [];
-  const contratados = v.filter((x) => x.estado === "contratado").length;
-  const conPresupuesto = v.filter(
-    (x) => x.estado === "presupuesto_recibido",
-  ).length;
-  const contactados = v.filter((x) => x.estado === "contactado").length;
-  const ideasAprobadas = (ideas ?? []).filter(
-    (x) => x.estado === "aprobada",
-  ).length;
-  const ideasEvaluando = (ideas ?? []).filter(
-    (x) => x.estado === "evaluando",
-  ).length;
-
-  const vacio = g.length === 0 && (items ?? []).length === 0 && t.length === 0;
-
-  return (
-    <main className="flex flex-col gap-5">
-      {/* ---------- HERO ---------- */}
-      <section className="flex flex-col-reverse overflow-hidden rounded-2xl border border-border bg-card shadow-card lg:flex-row">
-        <div className="flex-1 bg-gradient-to-b from-card to-[#fdf8f3] p-5 lg:p-7">
-          <Eyebrow>Faltan</Eyebrow>
-          <p className="mt-0.5 flex items-baseline gap-2.5">
-            <span className="font-serif text-5xl leading-none tabular-nums lg:text-6xl">
-              {Math.abs(dias)}
-            </span>
-            <span className="text-base text-muted-foreground lg:text-lg">
-              {dias > 0
-                ? dias === 1
-                  ? "día para el casamiento"
-                  : "días para el casamiento"
-                : dias === 0
-                  ? "¡es hoy!"
-                  : "días desde el casamiento"}
-            </span>
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {formatFecha(wedding.fecha)} · {wedding.lugar}
-          </p>
-
-          <dl className="mt-5 flex flex-wrap gap-x-7 gap-y-3">
-            <DatoHero
-              label="Confirmados"
-              valor={`${confirmados}`}
-              detalle={`de ${personas}`}
-            />
-            <DatoHero
-              label="Pagado"
-              valor={formatMonto(pagado.usd, "USD")}
-              detalle={`de ${formatMonto(objetivoUSD, "USD")}`}
-            />
-            <DatoHero
-              label="Tareas hechas"
-              valor={`${hechas}`}
-              detalle={`de ${t.length}`}
-            />
-          </dl>
-        </div>
-
-        {/*
-          next/image recorta y comprime según el dispositivo: la foto original
-          pesa cientos de KB y así llegan unas decenas.
-        */}
-        <div className="relative h-40 shrink-0 sm:h-48 lg:h-auto lg:w-[38%]">
-          <Image
-            src={portada}
-            alt="El lugar del casamiento"
-            fill
-            sizes="(min-width: 1024px) 38vw, 100vw"
-            placeholder="blur"
-            priority
-            className="object-cover"
-          />
-        </div>
-      </section>
-
-      {vacio && (
-        <Card className="border-dashed text-center">
-          <p className="font-medium">Arranquemos</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-            Tres cosas para empezar: traer el checklist estándar desde Tareas,
-            cargar los invitados (se pueden pegar de una planilla) y anotar el
-            presupuesto del salón.
-          </p>
-        </Card>
-      )}
-
-      {/* ---------- TARJETAS ---------- */}
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-5">
-        <Tarjeta href="/presupuesto" titulo="Presupuesto">
-          <p className="text-xl font-semibold tabular-nums lg:text-2xl">
-            {formatMonto(pagado.usd, "USD")}
-          </p>
-          <p className="text-xs tabular-nums text-subtle">
-            {formatMonto(pagado.ars, "ARS")} · {Math.round(usado * 100)}% del
-            objetivo
-          </p>
-          <div className="mt-2.5 flex h-1.5 overflow-hidden rounded-full bg-muted">
-            <div
-              className="bg-data"
-              style={{ width: `${Math.min(100, usado * 100)}%` }}
-            />
-            <div
-              className="bg-data-soft"
-              style={{
-                width: `${Math.min(
-                  100 - Math.min(100, usado * 100),
-                  objetivoUSD > 0
-                    ? Math.max(0, (previsto.usd - pagado.usd) / objetivoUSD) *
-                        100
-                    : 0,
-                )}%`,
-              }}
-            />
-          </div>
-          <p className="mt-1.5 text-[11px] text-subtle">
-            Falta {formatMonto(Math.max(0, previsto.usd - pagado.usd), "USD")}
-          </p>
-        </Tarjeta>
-
-        <Tarjeta href="/invitados" titulo="Invitados">
-          <p className="text-xl font-semibold tabular-nums lg:text-2xl">
-            {confirmados}{" "}
-            <span className="text-sm font-medium text-subtle">
-              de {personas}
-            </span>
-          </p>
-          <p className="text-xs text-subtle">
-            {pendientes > 0
-              ? `${pendientes} sin responder`
-              : g.length === 0
-                ? "cargá los primeros"
-                : "todos respondieron"}
-          </p>
-          <div className="mt-2.5 flex h-1.5 gap-0.5 overflow-hidden rounded-full">
-            <Segmento valor={confirmados} total={personas} clase="bg-success" />
-            <Segmento valor={pendientes} total={personas} clase="bg-muted" />
-            <Segmento
-              valor={rechazados}
-              total={personas}
-              clase="bg-danger-soft"
-            />
-          </div>
-          {menusEspeciales > 0 && (
-            <p className="mt-1.5 text-[11px] text-subtle">
-              {menusEspeciales} con menú especial
-            </p>
-          )}
-        </Tarjeta>
-
-        <Tarjeta href="/tareas" titulo="Tareas">
-          <p className="text-xl font-semibold tabular-nums lg:text-2xl">
-            {hechas}{" "}
-            <span className="text-sm font-medium text-subtle">
-              de {t.length}
-            </span>
-          </p>
-          <p className="text-xs text-subtle">
-            {estaSemana.length} vencen esta semana
-          </p>
-          <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full bg-sage"
-              style={{
-                width: `${t.length > 0 ? (hechas / t.length) * 100 : 0}%`,
-              }}
-            />
-          </div>
-          {vencidas.length > 0 && (
-            <p className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-danger">
-              <AlertTriangle className="h-3 w-3 shrink-0" />
-              {vencidas.length} {vencidas.length === 1 ? "vencida" : "vencidas"}
-            </p>
-          )}
-        </Tarjeta>
-
-        <Tarjeta href="/mesas" titulo="Mesas">
-          <p className="text-xl font-semibold tabular-nums lg:text-2xl">
-            {(tables ?? []).length}{" "}
-            <span className="text-sm font-medium text-subtle">mesas</span>
-          </p>
-          <p className="text-xs tabular-nums text-subtle">
-            {ocupados} de {lugares} lugares
-          </p>
-          <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-muted">
-            <div
-              className="h-full bg-sage"
-              style={{
-                width: `${lugares > 0 ? Math.min(100, (ocupados / lugares) * 100) : 0}%`,
-              }}
-            />
-          </div>
-          {sinMesa > 0 && (
-            <p className="mt-1.5 text-[11px] font-semibold text-warning">
-              {sinMesa} sin mesa
-            </p>
-          )}
-        </Tarjeta>
-      </section>
-
-      {/* ---------- GRILLA PRINCIPAL ---------- */}
-      <section className="grid gap-5 lg:grid-cols-[minmax(0,1.72fr)_minmax(0,1fr)] lg:items-start">
-        <div className="flex flex-col gap-5">
-          {categorias.length > 0 && (
-            <Card>
-              <div className="mb-4 flex items-baseline gap-2.5">
-                <CardTitle>Presupuesto por categoría</CardTitle>
-                <span className="hidden text-xs text-subtle sm:inline">
-                  previsto vs pagado, en dólares
-                </span>
-                <Link
-                  href="/presupuesto"
-                  className="ml-auto text-xs font-semibold text-primary hover:text-primary-ink"
-                >
-                  Ver todo
-                </Link>
-              </div>
-
-              <ul className="flex flex-col gap-3.5">
-                {categorias.slice(0, 6).map((c) => (
-                  <li key={c.categoria}>
-                    <div className="mb-1.5 flex items-baseline gap-2 text-sm">
-                      <span className="font-medium">
-                        {RUBRO_LABEL[c.categoria]}
-                      </span>
-                      <span className="ml-auto shrink-0 text-xs tabular-nums text-muted-foreground">
-                        {formatMonto(c.pagado.usd, "USD")}{" "}
-                        <span className="text-subtle">
-                          / {formatMonto(c.previsto.usd, "USD")}
-                        </span>
-                      </span>
-                    </div>
-                    <div className="relative flex h-5 overflow-hidden rounded-lg bg-muted">
-                      <div
-                        className="bg-data"
-                        style={{
-                          width: `${(c.pagado.usd / maxCategoria) * 100}%`,
-                        }}
-                      />
-                      <div
-                        className="bg-data-soft"
-                        style={{
-                          width: `${(Math.max(0, c.previsto.usd - c.pagado.usd) / maxCategoria) * 100}%`,
-                        }}
-                      />
-                      {c.excedido && (
-                        <span
-                          className="absolute inset-y-0 w-0.5 bg-danger"
-                          style={{
-                            left: `${(c.estimado.usd / maxCategoria) * 100}%`,
-                          }}
-                        />
-                      )}
-                    </div>
-                    {c.excedido && (
-                      <p className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-danger">
-                        <AlertTriangle className="h-3 w-3 shrink-0" />
-                        Se pasó{" "}
-                        {formatMonto(c.previsto.usd - c.estimado.usd, "USD")} de
-                        lo estimado
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-
-              <div className="mt-4 flex flex-wrap gap-4 border-t border-border-soft pt-3 text-[11px] text-subtle">
-                <Leyenda clase="bg-data" texto="Pagado" />
-                <Leyenda clase="bg-data-soft" texto="Falta pagar" />
-                <span className="flex items-center gap-1.5">
-                  <i className="inline-block h-2.5 w-0.5 bg-danger" />
-                  Estimado original
-                </span>
-              </div>
-            </Card>
-          )}
-
-          {(vencidas.length > 0 || estaSemana.length > 0) && (
-            <Card>
-              <div className="mb-3 flex items-baseline gap-2.5">
-                <CardTitle>Esta semana</CardTitle>
-                <span className="text-xs text-subtle">
-                  {abiertas.length} abiertas
-                </span>
-                <Link
-                  href="/tareas"
-                  className="ml-auto text-xs font-semibold text-primary hover:text-primary-ink"
-                >
-                  Ver todas
-                </Link>
-              </div>
-              <ul className="divide-y divide-border-soft">
-                {[...vencidas, ...estaSemana].slice(0, 6).map((x) => {
-                  const vencida = !!x.fecha_limite && x.fecha_limite < hoy;
-                  return (
-                    <li key={x.id}>
-                      <Link
-                        href="/tareas"
-                        className="flex items-center gap-3 py-2.5 active:bg-muted"
-                      >
-                        <i className={cnBorde(vencida)} aria-hidden="true" />
-                        <span className="min-w-0 flex-1 truncate text-sm">
-                          {x.titulo}
-                        </span>
-                        <span
-                          className={
-                            vencida
-                              ? "shrink-0 text-xs font-semibold tabular-nums text-danger"
-                              : "shrink-0 text-xs tabular-nums text-muted-foreground"
-                          }
-                        >
-                          {vencida ? "Venció " : ""}
-                          {formatFecha(x.fecha_limite)}
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </Card>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-5">
-          {proximos.length > 0 && (
-            <Card>
-              <div className="mb-3 flex items-baseline gap-2.5">
-                <CardTitle>Próximos pagos</CardTitle>
-                <Link
-                  href="/pagos"
-                  className="ml-auto text-xs font-semibold text-primary hover:text-primary-ink"
-                >
-                  Ver todos
-                </Link>
-              </div>
-              <ul className="divide-y divide-border-soft">
-                {proximos.slice(0, 4).map((p) => (
-                  <li key={p.id} className="flex items-center gap-3 py-2.5">
-                    <span className="w-9 shrink-0 text-center">
-                      <span className="block text-sm font-semibold leading-tight tabular-nums">
-                        {p.fecha.slice(8, 10)}
-                      </span>
-                      <span className="block text-[10px] uppercase tracking-wide text-subtle">
-                        {MES_CORTO[Number(p.fecha.slice(5, 7)) - 1]}
-                      </span>
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-sm">
-                      {conceptoDe(p.budget_item_id)}
-                      {p.fecha < hoy && (
-                        <span className="font-semibold text-danger">
-                          {" "}
-                          · vencido
-                        </span>
-                      )}
-                    </span>
-                    <span className="shrink-0 text-sm font-semibold tabular-nums">
-                      {formatMonto(p.monto, p.moneda)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-3 flex items-center gap-2 rounded-xl bg-warning-soft px-3 py-2.5 text-xs font-semibold text-warning">
-                Total en 30 días
-                <span className="ml-auto text-sm tabular-nums">
-                  {formatMonto(totalProximos, "USD")}
-                </span>
-              </p>
-            </Card>
-          )}
-
-          {v.length > 0 && (
-            <Card>
-              <div className="mb-3 flex items-baseline gap-2.5">
-                <CardTitle>Proveedores</CardTitle>
-                <span className="text-xs text-subtle">{v.length} en total</span>
-                <Link
-                  href="/proveedores"
-                  className="ml-auto text-xs font-semibold text-primary hover:text-primary-ink"
-                >
-                  Ver todos
-                </Link>
-              </div>
-              <div className="mb-3 flex h-2 gap-0.5 overflow-hidden rounded-full">
-                <Segmento
-                  valor={contratados}
-                  total={v.length}
-                  clase="bg-success"
-                />
-                <Segmento
-                  valor={conPresupuesto}
-                  total={v.length}
-                  clase="bg-sage"
-                />
-                <Segmento
-                  valor={contactados}
-                  total={v.length}
-                  clase="bg-muted"
-                />
-              </div>
-              <dl className="flex flex-col gap-2 text-sm">
-                <FilaEstado
-                  clase="bg-success"
-                  label="Contratados"
-                  valor={contratados}
-                />
-                <FilaEstado
-                  clase="bg-sage"
-                  label="Con presupuesto"
-                  valor={conPresupuesto}
-                />
-                <FilaEstado
-                  clase="bg-muted"
-                  label="Sólo contactados"
-                  valor={contactados}
-                />
-              </dl>
-            </Card>
-          )}
-
-          {(ideas ?? []).length > 0 && (
-            <Card>
-              <div className="mb-3 flex items-baseline gap-2.5">
-                <CardTitle>Ideas</CardTitle>
-                <span className="text-xs text-subtle">
-                  {(ideas ?? []).length} guardadas
-                </span>
-                <Link
-                  href="/ideas"
-                  className="ml-auto text-xs font-semibold text-primary hover:text-primary-ink"
-                >
-                  Ver todas
-                </Link>
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {ideasAprobadas > 0 && (
-                  <Badge className="bg-success-soft text-success">
-                    {ideasAprobadas} aprobadas
-                  </Badge>
-                )}
-                {ideasEvaluando > 0 && (
-                  <Badge className="bg-warning-soft text-warning">
-                    {ideasEvaluando} evaluando
-                  </Badge>
-                )}
-              </div>
-            </Card>
-          )}
-
-          <Link
-            href="/agenda-del-dia"
-            className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-card active:bg-muted"
-          >
-            {actividades ? (
-              <CalendarDays className="h-5 w-5 shrink-0 text-sage" />
-            ) : (
-              <Clock className="h-5 w-5 shrink-0 text-subtle" />
-            )}
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold">
-                Agenda del día
-              </span>
-              <span className="block text-xs text-subtle">
-                {actividades
-                  ? `${actividades} actividades cargadas`
-                  : "Todavía sin armar"}
-              </span>
-            </span>
-            <ChevronRight className="h-5 w-5 shrink-0 text-subtle" />
-          </Link>
-        </div>
-      </section>
-    </main>
-  );
-}
-
-const MES_CORTO = [
-  "ene",
-  "feb",
-  "mar",
-  "abr",
-  "may",
-  "jun",
-  "jul",
-  "ago",
-  "sep",
-  "oct",
-  "nov",
-  "dic",
-];
+const ORIGEN: Record<string, string> = {
+  boda: "Boda",
+  viaje: "Viaje",
+  tarjeta: "Tarjeta",
+};
 
 function sumarDias(iso: string, dias: number) {
   const d = new Date(iso + "T00:00:00");
@@ -616,98 +24,216 @@ function sumarDias(iso: string, dias: number) {
   ].join("-");
 }
 
-function cnBorde(vencida: boolean) {
-  return vencida
-    ? "h-4.5 w-4.5 shrink-0 rounded-md border-2 border-danger"
-    : "h-4.5 w-4.5 shrink-0 rounded-md border-2 border-border";
-}
+export default async function InicioPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-function DatoHero({
-  label,
-  valor,
-  detalle,
-}: {
-  label: string;
-  valor: string;
-  detalle: string;
-}) {
+  const [{ data: miembro }, { data: boda }, { data: viaje }, { data: primeraParada }, { data: tareas }] =
+    await Promise.all([
+      supabase.from("couple_members").select("couple_id").eq("user_id", user!.id).maybeSingle(),
+      supabase.from("wedding_info").select("fecha, lugar").limit(1).maybeSingle(),
+      supabase
+        .from("trip_trips")
+        .select("nombre, inicio")
+        .is("deleted_at", null)
+        .order("inicio")
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("trip_stops")
+        .select("desde")
+        .is("deleted_at", null)
+        .not("desde", "is", null)
+        .order("desde")
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("wedding_tasks")
+        .select("id, titulo, fecha_limite")
+        .neq("estado", "hecha")
+        .not("fecha_limite", "is", null)
+        .order("fecha_limite"),
+    ]);
+
+  const plata = miembro ? await getCommitmentsSummary(miembro.couple_id) : null;
+
+  const hoy = hoyISO();
+  const en7 = sumarDias(hoy, 7);
+  const vencidas = (tareas ?? []).filter((t) => t.fecha_limite! < hoy);
+  const estaSemana = (tareas ?? []).filter(
+    (t) => t.fecha_limite! >= hoy && t.fecha_limite! <= en7,
+  );
+  const inicioViaje = viaje?.inicio ?? primeraParada?.desde ?? null;
+  const proximos = (plata?.commitments ?? []).filter((c) => c.due_date).slice(0, 5);
+
   return (
-    <div>
-      <dt>
-        <Eyebrow>{label}</Eyebrow>
-      </dt>
-      <dd className="mt-0.5 text-lg font-semibold tabular-nums">
-        {valor}{" "}
-        <span className="text-sm font-medium text-subtle">{detalle}</span>
-      </dd>
-    </div>
+    <main className="flex flex-col gap-4">
+      <h1 className="font-serif text-2xl font-normal lg:text-[28px]">Inicio</h1>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Cuenta
+          href="/boda"
+          titulo="Casamiento"
+          fecha={boda?.fecha ?? null}
+          detalle={boda?.lugar}
+          vacio="Sin fecha cargada"
+        />
+        <Cuenta
+          href="/viaje"
+          titulo={viaje?.nombre ?? "Viaje"}
+          fecha={inicioViaje}
+          vacio="Todavía sin itinerario"
+        />
+      </div>
+
+      <Link href="/finanzas">
+        <Card className="flex items-center justify-between gap-3">
+          <div>
+            <Eyebrow>Disponible real conjunto</Eyebrow>
+            <p
+              className={`mt-1 font-serif text-3xl tabular-nums ${
+                (plata?.available_ars ?? 0) < 0 ? "text-danger" : ""
+              }`}
+            >
+              {formatMonto(plata?.available_ars ?? 0, "ARS")}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Saldo líquido menos lo que falta pagar de las tarjetas
+              {plata?.reference_rate ? ` · dólares a $ ${plata.reference_rate}` : ""}
+            </p>
+          </div>
+          <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground" />
+        </Card>
+      </Link>
+
+      {plata?.alert && (
+        <Link
+          href={plata.alert.commitment.href}
+          className="rounded-2xl border border-danger/30 bg-danger-soft p-4 text-sm text-danger"
+        >
+          <strong>No alcanza para el próximo pago de la boda:</strong>{" "}
+          {plata.alert.commitment.label} ({formatFecha(plata.alert.commitment.due_date)}) necesita{" "}
+          {formatMonto(plata.alert.needed_ars, "ARS")} y el disponible proyectado es{" "}
+          {formatMonto(plata.alert.projected_ars, "ARS")}.
+        </Link>
+      )}
+
+      <Card>
+        <CardTitle>Próximos vencimientos</CardTitle>
+        {proximos.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">Nada pendiente.</p>
+        ) : (
+          <ul className="mt-2 divide-y divide-border-soft">
+            {proximos.map((c) => (
+              <li key={`${c.source}-${c.ref_id}-${c.currency}`}>
+                <Link href={c.href} className="flex items-center gap-3 py-2.5">
+                  <Badge>{ORIGEN[c.source]}</Badge>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm">{c.label}</span>
+                    <span
+                      className={`text-xs ${c.due_date! < hoy ? "text-danger" : "text-muted-foreground"}`}
+                    >
+                      {formatFecha(c.due_date)}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-sm tabular-nums">
+                    {formatMonto(c.amount, c.currency)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
+      <Card>
+        <CardTitle>Tareas</CardTitle>
+        <ListaTareas titulo="Vencidas" tareas={vencidas} alerta />
+        <ListaTareas titulo="Esta semana" tareas={estaSemana} />
+        {vencidas.length === 0 && estaSemana.length === 0 && (
+          <p className="mt-2 text-sm text-muted-foreground">Nada para esta semana.</p>
+        )}
+      </Card>
+
+      <form action={salir} className="lg:hidden">
+        <Button variant="outline" className="w-full">
+          Cerrar sesión
+        </Button>
+      </form>
+    </main>
   );
 }
 
-function Tarjeta({
+function Cuenta({
   href,
   titulo,
-  children,
+  fecha,
+  detalle,
+  vacio,
 }: {
   href: string;
   titulo: string;
-  children: React.ReactNode;
+  fecha: string | null;
+  detalle?: string;
+  vacio: string;
 }) {
+  const dias = fecha ? diasHasta(fecha) : null;
   return (
-    <Link
-      href={href}
-      className="rounded-2xl border border-border bg-card p-3.5 shadow-card transition-colors active:bg-muted lg:p-4"
-    >
-      <span className="mb-2 flex items-center gap-2">
-        <Eyebrow className="text-muted-foreground">{titulo}</Eyebrow>
-        <ChevronRight className="ml-auto h-4 w-4 text-subtle" />
-      </span>
-      {children}
+    <Link href={href}>
+      <Card className="h-full">
+        <Eyebrow>{titulo}</Eyebrow>
+        {dias === null ? (
+          <p className="mt-1 text-sm text-muted-foreground">{vacio}</p>
+        ) : (
+          <>
+            <p className="mt-1 flex items-baseline gap-2">
+              <span className="font-serif text-4xl leading-none tabular-nums">
+                {Math.abs(dias)}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {dias > 0 ? (dias === 1 ? "día" : "días") : dias === 0 ? "¡es hoy!" : "días desde"}
+              </span>
+            </p>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              {formatFecha(fecha)}
+              {detalle ? ` · ${detalle}` : ""}
+            </p>
+          </>
+        )}
+      </Card>
     </Link>
   );
 }
 
-function Segmento({
-  valor,
-  total,
-  clase,
+function ListaTareas({
+  titulo,
+  tareas,
+  alerta = false,
 }: {
-  valor: number;
-  total: number;
-  clase: string;
+  titulo: string;
+  tareas: { id: string; titulo: string; fecha_limite: string | null }[];
+  alerta?: boolean;
 }) {
-  if (valor <= 0) return null;
+  if (tareas.length === 0) return null;
   return (
-    <div
-      className={`${clase} first:rounded-l-full last:rounded-r-full`}
-      style={{ width: `${total > 0 ? (valor / total) * 100 : 0}%` }}
-    />
-  );
-}
-
-function FilaEstado({
-  clase,
-  label,
-  valor,
-}: {
-  clase: string;
-  label: string;
-  valor: number;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      <i className={`h-2 w-2 shrink-0 rounded-[2px] ${clase}`} />
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="ml-auto font-semibold tabular-nums">{valor}</dd>
+    <div className="mt-3">
+      <Eyebrow className={alerta ? "text-danger" : undefined}>
+        {titulo} · {tareas.length}
+      </Eyebrow>
+      <ul className="mt-1 divide-y divide-border-soft">
+        {tareas.map((t) => (
+          <li key={t.id}>
+            <Link href="/boda/tareas" className="flex items-center justify-between gap-3 py-2 text-sm">
+              <span className="min-w-0 truncate">{t.titulo}</span>
+              <span className={`shrink-0 text-xs ${alerta ? "text-danger" : "text-muted-foreground"}`}>
+                {formatFecha(t.fecha_limite)}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
-  );
-}
-
-function Leyenda({ clase, texto }: { clase: string; texto: string }) {
-  return (
-    <span className="flex items-center gap-1.5">
-      <i className={`inline-block h-2.5 w-2.5 rounded-[3px] ${clase}`} />
-      {texto}
-    </span>
   );
 }
