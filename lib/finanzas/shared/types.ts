@@ -639,7 +639,7 @@ export interface SavingsOverview {
 export interface FxRate {
   /** Pesos por dólar (lado venta: lo que costaría comprarlos hoy). */
   rate: number;
-  /** Casa de origen de la cotización, ej. "CCL". */
+  /** Casa de origen de la cotización, ej. "MEP". */
   source: string;
   updated_at: string;
 }

@@ -135,13 +135,13 @@ describe('parseQuotes', () => {
 describe('parseFxRate', () => {
   it('interpreta una respuesta bien formada', () => {
     const rate = parseFxRate({
-      casa: 'contadoconliqui',
-      nombre: 'Contado con Liquidación',
+      casa: 'bolsa',
+      nombre: 'Bolsa',
       compra: 1230,
       venta: 1250.5,
       fechaActualizacion: '2026-07-30T10:00:00Z',
     });
-    expect(rate).toEqual({ rate: 1250.5, source: 'CCL', updated_at: '2026-07-30T10:00:00Z' });
+    expect(rate).toEqual({ rate: 1250.5, source: 'MEP', updated_at: '2026-07-30T10:00:00Z' });
   });
 
   it('usa el lado venta, no el de compra', () => {
@@ -152,7 +152,7 @@ describe('parseFxRate', () => {
   });
 
   it('devuelve null si falta el campo venta', () => {
-    expect(parseFxRate({ casa: 'contadoconliqui', compra: 1230 })).toBeNull();
+    expect(parseFxRate({ casa: 'bolsa', compra: 1230 })).toBeNull();
   });
 
   it('devuelve null ante una respuesta completamente distinta', () => {

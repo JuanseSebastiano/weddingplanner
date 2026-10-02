@@ -219,7 +219,7 @@ function Stat({ label, value, hint, tone }: StatProps) {
  * nunca queda vacía por una falla externa que no depende de esta app.
  *
  * El ojo tapa los montos y deja solo el % de ganancia. El toggle ARS/USD
- * convierte todo a dólares al tipo de cambio CCL del día — el % de
+ * convierte todo a dólares al tipo de cambio MEP del día — el % de
  * ganancia no cambia con la moneda porque se divide costo y valor por el
  * mismo tipo de cambio, así que no hace falta recalcularlo.
  */

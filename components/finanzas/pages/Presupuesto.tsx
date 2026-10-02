@@ -34,9 +34,10 @@ export function PresupuestoPage() {
   if (isLoading || !data) return null;
 
   const { boda, viaje, pagos, ahorro } = data;
-  const cotizacion = boda?.cotizacion ?? ahorro.cotizacion;
+  const cotizacion = ahorro.cotizacion ?? boda?.cotizacion ?? null;
   const aArs = (monto: number, moneda: 'ARS' | 'USD') => (moneda === 'USD' ? monto * (cotizacion ?? 0) : monto);
-  const pendienteArs = (boda?.pendiente.ars ?? 0) + viaje.reduce((acc, v) => acc + aArs(v.pending, v.currency), 0);
+  const bodaPendienteArs = boda ? (cotizacion ? boda.pendiente.usd * cotizacion : boda.pendiente.ars) : 0;
+  const pendienteArs = bodaPendienteArs + viaje.reduce((acc, v) => acc + aArs(v.pending, v.currency), 0);
   const faltaArs = pendienteArs - ahorro.total_ars;
   const today = new Date().toISOString().slice(0, 10);
   const porMes = new Map<string, Commitment[]>();
