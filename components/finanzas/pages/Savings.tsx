@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { formatCurrency, type HoldingWithRelations } from '@nf/shared';
 import { useBreakpoint } from '../hooks/useBreakpoint';
-import { useDeleteHolding, useMe, usePortfolio, useSavings } from '../hooks/queries';
+import { useDeleteHolding, usePortfolio, useSavings } from '../hooks/queries';
 import { HoldingForm } from '../components/HoldingForm';
 import { SavingsCashPanel } from '../components/SavingsCashPanel';
 import { EmptyState, ErrorState, Skeleton } from '../components/States';
@@ -225,7 +225,6 @@ function Stat({ label, value, hint, tone }: StatProps) {
  */
 export function SavingsPage() {
   const { compact, cards } = useBreakpoint();
-  const me = useMe();
   const portfolio = usePortfolio();
   const savings = useSavings();
   const removeHolding = useDeleteHolding();
@@ -429,7 +428,6 @@ export function SavingsPage() {
           {positions.map((position, index) => {
             const hasQuote = position.market_value !== null && position.gain !== null;
             const positive = (position.gain ?? 0) >= 0;
-            const isOwner = position.user_id === me.data?.user.id;
 
             return (
               <div
@@ -480,7 +478,7 @@ export function SavingsPage() {
                 </span>
 
                 <span className="flex justify-end gap-2">
-                  {isOwner && (
+                  {(
                     <>
                       <button
                         type="button"
@@ -514,7 +512,6 @@ export function SavingsPage() {
           {positions.map((position, index) => {
             const hasQuote = position.market_value !== null && position.gain !== null;
             const positive = (position.gain ?? 0) >= 0;
-            const isOwner = position.user_id === me.data?.user.id;
 
             return (
               <div
@@ -552,7 +549,7 @@ export function SavingsPage() {
                   <span className="chip bg-wash/[0.05] text-[11.5px] text-ink-secondary">
                     {position.profile?.display_name ?? '—'}
                   </span>
-                  {isOwner && (
+                  {(
                     <span className="ml-auto flex gap-3">
                       <button
                         type="button"
