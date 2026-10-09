@@ -175,9 +175,6 @@ export function DashboardPage() {
         </div>
       </div>
 
-      <AvailableCard />
-      <CommitmentsCard />
-
       {data && <BudgetAlert budgets={data.budgets} />}
 
       {error && (
@@ -270,6 +267,10 @@ export function DashboardPage() {
           <MonthlyTrend data={data.trend} members={data.members} compact={compact} />
         </div>
       )}
+
+      {/* Lo que viene (disponible y compromisos) va al final: arriba manda el mes. */}
+      <AvailableCard />
+      <CommitmentsCard />
 
       {selectedCategory && (
         <CategoryExpensesFlyout
