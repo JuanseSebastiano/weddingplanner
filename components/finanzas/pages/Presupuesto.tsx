@@ -33,7 +33,12 @@ export function PresupuestoPage() {
   const { data, isLoading } = usePresupuesto();
   if (isLoading || !data) return null;
 
-  const { boda, viaje, pagos } = data;
+  const { boda, viaje, pagos, ahorro } = data;
+  const cotizacion = ahorro.cotizacion ?? boda?.cotizacion ?? null;
+  const aArs = (monto: number, moneda: 'ARS' | 'USD') => (moneda === 'USD' ? monto * (cotizacion ?? 0) : monto);
+  const bodaPendienteArs = boda ? (cotizacion ? boda.pendiente.usd * cotizacion : boda.pendiente.ars) : 0;
+  const pendienteArs = bodaPendienteArs + viaje.reduce((acc, v) => acc + aArs(v.pending, v.currency), 0);
+  const faltaArs = pendienteArs - ahorro.total_ars;
   const today = new Date().toISOString().slice(0, 10);
   const porMes = new Map<string, Commitment[]>();
   for (const p of pagos) {
@@ -46,6 +51,42 @@ export function PresupuestoPage() {
       <div className="flex flex-col gap-1.5">
         <span className="eyebrow">PROYECTOS DE LA PAREJA</span>
         <h1 className="m-0 text-[26px] font-semibold text-ink-strong">Presupuesto</h1>
+      </div>
+
+      <div className="card flex flex-col gap-4 px-[22px] py-5">
+        <span className="eyebrow">RESUMEN</span>
+        <div className="flex flex-col gap-1">
+          <span className="text-[13px] text-ink-secondary">{faltaArs > 0 ? 'Te falta ahorrar' : 'Ahorro de más'}</span>
+          <span className="tabular text-[28px] font-semibold text-ink-strong">
+            {formatCurrency(Math.abs(faltaArs))}
+          </span>
+          {cotizacion ? (
+            <span className="tabular text-xs text-ink-faint">
+              ≈ {formatCurrency(Math.abs(faltaArs) / cotizacion, 'USD')}
+            </span>
+          ) : null}
+        </div>
+        <div className="h-2 overflow-hidden rounded-full bg-sunken">
+          <div
+            className="h-full rounded-full bg-accent"
+            style={{ width: `${pendienteArs > 0 ? Math.min(100, (ahorro.total_ars / pendienteArs) * 100) : 0}%` }}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4 border-t border-wash/[0.08] pt-4">
+          {[
+            { label: 'Falta pagar', ars: pendienteArs },
+            { label: 'Ahorrado', ars: ahorro.total_ars },
+          ].map((f) => (
+            <div key={f.label} className="flex flex-col gap-0.5">
+              <span className="text-xs text-ink-secondary">{f.label}</span>
+              <span className="tabular text-[15px] font-semibold text-ink-primary">{formatCurrency(f.ars)}</span>
+              {cotizacion ? (
+                <span className="tabular text-xs text-ink-faint">≈ {formatCurrency(f.ars / cotizacion, 'USD')}</span>
+              ) : null}
+            </div>
+          ))}
+        </div>
+        <span className="text-xs text-ink-faint">Falta pagar de boda + viaje, sin contar lo ya pagado</span>
       </div>
 
       <div className="grid gap-[18px] sm:grid-cols-2">

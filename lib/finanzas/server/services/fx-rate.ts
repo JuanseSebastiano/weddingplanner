@@ -2,7 +2,7 @@ import { z } from 'zod';
 import type { FxRate } from '@nf/shared';
 
 /**
- * Cotización del dólar CCL (Contado con Liquidación) — la referencia
+ * Cotización del dólar MEP (bolsa) — la referencia
  * habitual en Argentina para valuar en dólares algo que se compra y se
  * vende en pesos, que es exactamente el caso de un CEDEAR.
  *
@@ -11,10 +11,10 @@ import type { FxRate } from '@nf/shared';
  * escribió este código: la política de red del sandbox bloquea el host.
  * `rawSchema` es la mejor hipótesis sobre la forma de la respuesta. Si
  * `getUsdRate()` empieza a devolver null en producción, correr
- * `curl https://dolarapi.com/v1/dolares/contadoconliqui` y ajustar el
+ * `curl https://dolarapi.com/v1/dolares/bolsa` y ajustar el
  * schema a los campos reales es el primer paso (documentado en el README).
  */
-const SOURCE_URL = 'https://dolarapi.com/v1/dolares/contadoconliqui';
+const SOURCE_URL = 'https://dolarapi.com/v1/dolares/bolsa';
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 8000;
 
@@ -30,7 +30,7 @@ export function parseFxRate(body: unknown): FxRate | null {
   if (!parsed.success) return null;
   return {
     rate: parsed.data.venta,
-    source: 'CCL',
+    source: 'MEP',
     updated_at: parsed.data.fechaActualizacion ?? new Date().toISOString(),
   };
 }
@@ -54,7 +54,7 @@ async function fetchRate(): Promise<FxRate> {
 }
 
 /**
- * Cotización del dólar CCL, cacheada unos minutos.
+ * Cotización del dólar MEP, cacheada unos minutos.
  *
  * Nunca tira: ante una falla sirve el cache anterior aunque haya vencido,
  * y si nunca hubo un fetch exitoso devuelve null. La cartera tiene que

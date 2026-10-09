@@ -130,6 +130,8 @@ export interface PresupuestoSummary {
   viaje: Array<{ currency: 'ARS' | 'USD'; total: number; paid: number; pending: number }>;
   /** Pagos programados impagos de la boda y del viaje, por fecha. */
   pagos: Commitment[];
+  /** Ahorro de la pareja (tenencias + efectivo apartado), en pesos. */
+  ahorro: { total_ars: number; cotizacion: number | null };
 }
 
 export interface AvailableSummary {
@@ -637,7 +639,7 @@ export interface SavingsOverview {
 export interface FxRate {
   /** Pesos por dólar (lado venta: lo que costaría comprarlos hoy). */
   rate: number;
-  /** Casa de origen de la cotización, ej. "CCL". */
+  /** Casa de origen de la cotización, ej. "MEP". */
   source: string;
   updated_at: string;
 }

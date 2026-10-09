@@ -1,7 +1,7 @@
 import { Router } from '../http';
 import { z } from 'zod';
 import { supabaseAdmin } from '../lib/supabase';
-import { asyncHandler, badRequest, conflict, forbidden, notFound } from '../lib/errors';
+import { asyncHandler, badRequest, conflict, notFound } from '../lib/errors';
 import type { AuthedRequest } from '../middleware/auth';
 import { personaDe } from '../lib/persona';
 import { getHolding, HOLDING_SELECT, listHoldings } from '../services/holdings';
@@ -68,9 +68,6 @@ holdingsRouter.patch(
     const id = req.params.id as string;
     const existing = await getHolding(req.auth.coupleId, id);
     if (!existing) throw notFound('Tenencia no encontrada');
-    if (existing.user_id !== req.auth.userId) {
-      throw forbidden('Solo podés editar tus propias tenencias');
-    }
 
     const { data, error } = await supabaseAdmin
       .from('fin_holdings')
@@ -96,9 +93,6 @@ holdingsRouter.delete(
     const id = req.params.id as string;
     const existing = await getHolding(req.auth.coupleId, id);
     if (!existing) throw notFound('Tenencia no encontrada');
-    if (existing.user_id !== req.auth.userId) {
-      throw forbidden('Solo podés borrar tus propias tenencias');
-    }
 
     const { error } = await supabaseAdmin
       .from('fin_holdings')
