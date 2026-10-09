@@ -103,7 +103,7 @@ function BudgetRow({ budget, index }: { budget: BudgetStatus; index: number }) {
           />
           <span className="truncate text-[13px] text-ink-bright">{budget.category_name}</span>
         </span>
-        <span className={`tabular shrink-0 font-mono text-[11.5px] ${tone.chip}`}>
+        <span className={`tabular shrink-0 text-[11.5px] ${tone.chip}`}>
           {budget.pct.toFixed(0)}%
         </span>
       </div>

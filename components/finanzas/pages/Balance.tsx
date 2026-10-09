@@ -92,7 +92,7 @@ export function BalancePage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1.5">
           <span className="eyebrow">INGRESOS Y EGRESOS</span>
-          <h1 className="m-0 text-[26px] font-semibold tracking-[-0.025em]">
+          <h1 className="m-0 font-serif text-2xl font-normal lg:text-[28px]">
             {formatMonthLabel(month)}
           </h1>
         </div>
@@ -107,7 +107,7 @@ export function BalancePage() {
             >
               ‹
             </button>
-            <span className="px-2.5 font-mono text-xs text-ink-soft">{month}</span>
+            <span className="px-2.5 text-xs text-ink-soft">{month}</span>
             <button
               type="button"
               onClick={() => changeMonth(1)}
@@ -252,7 +252,7 @@ export function BalancePage() {
           ))}
         </div>
 
-        <span className="ml-auto font-mono text-[10.5px] tracking-[0.08em] text-ink-faint">
+        <span className="ml-auto text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-faint">
           {total} {total === 1 ? 'MOVIMIENTO' : 'MOVIMIENTOS'}
         </span>
       </div>
@@ -283,7 +283,7 @@ export function BalancePage() {
       {entries.length > 0 && !cards && (
         <div className="overflow-hidden rounded-[18px] border border-wash/[0.06] bg-card shadow-card">
           <div
-            className="grid gap-3 border-b border-wash/[0.06] bg-sunken px-5 py-3 font-mono text-[10.5px] tracking-[0.08em] text-ink-faint"
+            className="grid gap-3 border-b border-wash/[0.06] bg-sunken px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-faint"
             style={{ gridTemplateColumns: tableCols }}
           >
             <span>FECHA</span>
@@ -309,7 +309,7 @@ export function BalancePage() {
                   }`,
                 }}
               >
-                <span className="tabular font-mono text-xs text-ink-muted">
+                <span className="tabular text-xs text-ink-muted">
                   {formatDate(entry.date)}
                 </span>
 
@@ -396,7 +396,7 @@ export function BalancePage() {
                     <span className="truncate text-[14.5px] font-medium">
                       {entry.counterparty ?? '—'}
                     </span>
-                    <span className="font-mono text-[11.5px] text-ink-secondary">
+                    <span className="text-[11.5px] text-ink-secondary">
                       {formatDate(entry.date)}
                     </span>
                   </div>
@@ -454,7 +454,7 @@ export function BalancePage() {
 
       {entries.length > 0 && (
         <div className="flex items-center justify-between gap-3 rounded-2xl bg-sunken px-5 py-3.5">
-          <span className="font-mono text-[11px] text-ink-faint">
+          <span className="text-[11px] text-ink-faint">
             {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} DE {total}
           </span>
           <div className="flex gap-1.5">
@@ -549,8 +549,8 @@ function FlowStat({ label, value, hint, tone, delay }: FlowStatProps) {
       className={`flex h-full animate-[nf-rise_380ms_cubic-bezier(0.22,1,0.36,1)_both] flex-col justify-between gap-3 rounded-[18px] border bg-card px-[22px] py-5 shadow-card ${border}`}
       style={{ animationDelay: delay }}
     >
-      <span className="font-mono text-[10.5px] tracking-[0.12em] text-ink-faint">{label}</span>
-      <span className={`tabular text-[25px] font-semibold tracking-[-0.02em] ${text}`}>{value}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-faint">{label}</span>
+      <span className={`tabular font-serif text-[29px] font-normal ${text}`}>{value}</span>
       <span className="text-xs leading-snug text-ink-secondary">{hint}</span>
     </div>
   );

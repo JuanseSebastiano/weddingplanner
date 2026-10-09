@@ -63,7 +63,7 @@ export function UserSplit({ data, memberOrder, month }: Props) {
               />
             </div>
 
-            <div className="flex justify-between font-mono text-[11px] text-ink-secondary">
+            <div className="flex justify-between text-[11px] text-ink-secondary">
               <span>
                 {row.count} {row.count === 1 ? 'gasto' : 'gastos'}
               </span>

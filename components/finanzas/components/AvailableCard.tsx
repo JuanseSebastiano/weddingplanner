@@ -31,7 +31,7 @@ export function AvailableCard() {
         {data.totals.map((row) => (
           <div key={row.currency} className="flex flex-col gap-1">
             <span
-              className={`tabular text-[27px] font-semibold tracking-[-0.02em] ${
+              className={`tabular font-serif text-[31px] font-normal ${
                 row.available < 0 ? 'text-danger' : 'text-ink-strong'
               }`}
             >

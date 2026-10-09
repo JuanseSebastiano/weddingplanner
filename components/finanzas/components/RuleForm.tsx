@@ -117,7 +117,7 @@ export function RuleForm({ categories, onDone }: { categories: Category[]; onDon
         <label className="flex flex-col gap-1.5">
           <span className="text-[11px] text-ink-muted">Patrón</span>
           <input
-            className="input font-mono"
+            className="input"
             placeholder={matchType === 'regex' ? '(coto|jumbo|carrefour)' : 'coto'}
             value={pattern}
             onChange={(event) => setPattern(event.target.value)}

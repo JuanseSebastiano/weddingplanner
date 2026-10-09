@@ -112,7 +112,7 @@ export function ExpensesPage() {
           <span className="eyebrow">
             {total} {total === 1 ? 'GASTO' : 'GASTOS'} · CON LOS FILTROS ACTUALES
           </span>
-          <h1 className="m-0 text-[26px] font-semibold tracking-[-0.025em]">Gastos</h1>
+          <h1 className="m-0 font-serif text-2xl font-normal lg:text-[28px]">Gastos</h1>
         </div>
         <button
           type="button"
@@ -195,7 +195,7 @@ export function ExpensesPage() {
 
         {activeChips.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-[10.5px] tracking-[0.08em] text-ink-faint">ACTIVOS</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-faint">ACTIVOS</span>
             {activeChips.map((chip) => (
               <span
                 key={chip.label}
@@ -253,7 +253,7 @@ export function ExpensesPage() {
       {items.length > 0 && !cards && (
         <div className="overflow-hidden rounded-[18px] border border-wash/[0.06] bg-card shadow-card">
           <div
-            className="grid gap-3 border-b border-wash/[0.06] bg-sunken px-5 py-3 font-mono text-[10.5px] tracking-[0.08em] text-ink-faint"
+            className="grid gap-3 border-b border-wash/[0.06] bg-sunken px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-faint"
             style={{ gridTemplateColumns: tableCols }}
           >
             <span>FECHA</span>
@@ -276,7 +276,7 @@ export function ExpensesPage() {
                 borderLeft: `3px solid ${isPending ? 'rgb(var(--nf-pending))' : 'transparent'}`,
               }}
             >
-              <span className="tabular font-mono text-xs text-ink-muted">
+              <span className="tabular text-xs text-ink-muted">
                 {formatDate(expense.expense_date)}
               </span>
 
@@ -300,7 +300,7 @@ export function ExpensesPage() {
                 </span>
               </span>
 
-              <span className="truncate font-mono text-xs text-ink-muted">
+              <span className="truncate text-xs text-ink-muted">
                 {expense.account ? `${expense.account.name}` : '—'}
               </span>
 
@@ -317,7 +317,7 @@ export function ExpensesPage() {
                   {formatCurrency(Number(expense.amount), expense.currency)}
                 </span>
                 {isPending ? (
-                  <span className="font-mono text-[9.5px] tracking-[0.06em] text-pending">
+                  <span className="text-[9.5px] tracking-[0.06em] text-pending">
                     NO SUMA
                   </span>
                 ) : (
@@ -371,7 +371,7 @@ export function ExpensesPage() {
                   <span className="truncate text-[14.5px] font-medium">
                     {expense.merchant ?? '—'}
                   </span>
-                  <span className="font-mono text-[11.5px] text-ink-secondary">
+                  <span className="text-[11.5px] text-ink-secondary">
                     {formatDate(expense.expense_date)}
                     {expense.account ? ` · ${expense.account.name}` : ''}
                   </span>
@@ -385,7 +385,7 @@ export function ExpensesPage() {
                     {formatCurrency(Number(expense.amount), expense.currency)}
                   </span>
                   {isPending && (
-                    <span className="font-mono text-[9.5px] text-pending">NO SUMA</span>
+                    <span className="text-[9.5px] text-pending">NO SUMA</span>
                   )}
                 </div>
               </div>
@@ -433,7 +433,7 @@ export function ExpensesPage() {
 
       {items.length > 0 && (
         <div className="flex items-center justify-between gap-3 rounded-2xl bg-sunken px-5 py-3.5">
-          <span className="font-mono text-[11px] text-ink-faint">
+          <span className="text-[11px] text-ink-faint">
             {(page - 1) * (filters.page_size ?? PAGE_SIZE) + 1}–
             {Math.min(page * (filters.page_size ?? PAGE_SIZE), total)} DE {total}
           </span>

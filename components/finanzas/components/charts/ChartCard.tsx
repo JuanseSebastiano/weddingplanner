@@ -17,8 +17,8 @@ export function ChartCard({ title, meta, children, delay = '0ms', className = ''
       style={{ animationDelay: delay }}
     >
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="m-0 text-[15px] font-semibold tracking-[-0.01em]">{title}</h2>
-        {meta && <span className="font-mono text-[10.5px] text-ink-faint">{meta}</span>}
+        <h2 className="m-0 shrink-0 font-serif text-xl font-normal leading-tight">{title}</h2>
+        {meta && <span className="text-right text-[10.5px] text-ink-faint">{meta}</span>}
       </div>
       {children}
     </section>

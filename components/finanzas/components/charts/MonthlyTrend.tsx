@@ -81,7 +81,7 @@ export function MonthlyTrend({ data, members, compact }: Props) {
                       columnas, flexbox comprimiría esas barras y la altura
                       dejaría de ser proporcional al monto. */}
                   <span
-                    className="tabular h-[14px] shrink-0 font-mono text-[10px] leading-[14px]"
+                    className="tabular h-[14px] shrink-0 text-[10px] leading-[14px]"
                     style={{ color: isPeak ? COLORS.pending : COLORS.textSecondary }}
                   >
                     {isLast || isPeak ? `$${Math.round(point.total / 1000)}k` : ''}
@@ -114,7 +114,7 @@ export function MonthlyTrend({ data, members, compact }: Props) {
                   </div>
 
                   <span
-                    className="h-[14px] shrink-0 font-mono text-[10.5px] leading-[14px]"
+                    className="h-[14px] shrink-0 text-[10.5px] leading-[14px]"
                     style={{ color: isLast ? COLORS.textBright : COLORS.textFaint }}
                   >
                     {monthLabel(point.month, index === 0 || point.month.slice(5) === '01')}

@@ -70,7 +70,7 @@ export function CategoryDonut({ data, total, compact, onSelectCategory }: Props)
               .join(', ')}`}
           >
             <div className="absolute inset-[27%] flex flex-col items-center justify-center gap-0.5 rounded-full bg-card">
-              <span className="font-mono text-[9.5px] tracking-[0.08em] text-ink-faint">TOTAL</span>
+              <span className="text-[9.5px] font-semibold uppercase tracking-[0.09em] text-ink-faint">TOTAL</span>
               <span className="tabular text-[15px] font-semibold">{short(total)}</span>
             </div>
           </div>
@@ -96,7 +96,7 @@ export function CategoryDonut({ data, total, compact, onSelectCategory }: Props)
                   <span className="tabular text-right text-[13px] text-ink-strong">
                     {formatCurrency(row.total)}
                   </span>
-                  <span className="tabular text-right font-mono text-[11.5px] text-ink-secondary">
+                  <span className="tabular text-right text-[11.5px] text-ink-secondary">
                     {row.share.toFixed(1)}%
                   </span>
                 </button>

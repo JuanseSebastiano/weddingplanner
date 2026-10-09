@@ -67,8 +67,8 @@ function Panel({
       }
     >
       <div className="flex flex-wrap items-baseline justify-between gap-2.5">
-        <h2 className="m-0 text-[15px] font-semibold">{title}</h2>
-        {meta && <span className="font-mono text-[10px] text-ink-faint">{meta}</span>}
+        <h2 className="m-0 font-serif text-xl font-normal leading-tight">{title}</h2>
+        {meta && <span className="text-[10px] text-ink-faint">{meta}</span>}
         {action}
       </div>
       {children}
@@ -110,7 +110,7 @@ function GmailPanel() {
         <div className="flex flex-wrap items-center gap-2.5">
           {gmail?.connected ? (
             <>
-              <span className="inline-flex items-center gap-[7px] font-mono text-[11px] text-accent-soft">
+              <span className="inline-flex items-center gap-[7px] text-[11px] text-accent-soft">
                 <span
                   className="h-[7px] w-[7px] rounded-full bg-accent"
                   style={{ boxShadow: '0 0 0 4px rgb(var(--nf-accent)/18%)' }}
@@ -150,7 +150,7 @@ function GmailPanel() {
               Conectar mi Gmail
             </button>
           ) : (
-            <span className="font-mono text-[11px] text-ink-faint">SIN CONFIGURAR EN EL SERVIDOR</span>
+            <span className="text-[11px] text-ink-faint">SIN CONFIGURAR EN EL SERVIDOR</span>
           )}
         </div>
       </div>
@@ -167,7 +167,7 @@ function GmailPanel() {
                 className="flex flex-wrap items-center gap-2 border-b border-wash/[0.05] py-1.5 text-[11.5px] last:border-0"
               >
                 <span
-                  className={`font-mono text-[10px] ${
+                  className={`text-[10px] ${
                     entry.parse_status === 'parsed' ? 'text-accent-soft' : 'text-ink-faint'
                   }`}
                 >
@@ -175,7 +175,7 @@ function GmailPanel() {
                 </span>
                 <span className="min-w-0 flex-1 truncate text-ink-secondary">{entry.subject}</span>
                 {entry.parsed_amount !== null && (
-                  <span className="tabular font-mono text-ink-soft">{entry.parsed_amount}</span>
+                  <span className="tabular text-ink-soft">{entry.parsed_amount}</span>
                 )}
                 {entry.error_detail && (
                   <span className="w-full text-[10.5px] text-ink-faint">{entry.error_detail}</span>
@@ -233,7 +233,7 @@ function CategoriesPanel({ kind }: { kind: CategoryKind }) {
                 {category.name}
               </span>
 
-              <span className="inline-flex items-center gap-1.5 font-mono text-[10.5px] text-ink-faint">
+              <span className="inline-flex items-center gap-1.5 text-[10.5px] text-ink-faint">
                 <span
                   className="h-3.5 w-3.5 rounded"
                   style={{ background: category.color }}
@@ -245,7 +245,7 @@ function CategoriesPanel({ kind }: { kind: CategoryKind }) {
                 {display.toUpperCase()}
               </span>
 
-              <span className="tabular font-mono text-[10.5px] text-ink-secondary">
+              <span className="tabular text-[10.5px] text-ink-secondary">
                 {ratio.toFixed(1)}:1
               </span>
 
@@ -523,7 +523,7 @@ function RulesPanel() {
             className="flex items-center justify-between gap-3 rounded-xl border border-wash/[0.05] bg-sunken px-3 py-2.5"
           >
             <span className="flex min-w-0 flex-col gap-0.5">
-              <span className="truncate font-mono text-xs leading-snug text-ink-soft">
+              <span className="truncate text-xs leading-snug text-ink-soft">
                 {rule.match_field} {RULE_MATCH_TYPE_LABELS[rule.match_type].toLowerCase()} “
                 {rule.pattern}”
               </span>
@@ -729,7 +729,7 @@ function AccountsPanel() {
                 {account.name}
                 {account.last4 && <span className="text-ink-faint"> ··{account.last4}</span>}
               </span>
-              <span className="font-mono text-[11px] text-ink-faint">
+              <span className="text-[11px] text-ink-faint">
                 {ACCOUNT_TYPE_LABELS[account.type].toUpperCase()}
                 {account.bank_name ? ` · ${account.bank_name.toUpperCase()}` : ''}
               </span>
@@ -843,7 +843,7 @@ export function SettingsPage() {
         <span className="eyebrow">
           HOGAR · {me.data?.members.length ?? 0} MIEMBROS
         </span>
-        <h1 className="m-0 text-[26px] font-semibold tracking-[-0.025em]">Configuración</h1>
+        <h1 className="m-0 font-serif text-2xl font-normal lg:text-[28px]">Configuración</h1>
         {me.data?.household && (
           <p className="m-0 text-[13px] text-ink-muted">
             “{me.data.household.name}” · {me.data.members.map((m) => m.display_name).join(' y ')}

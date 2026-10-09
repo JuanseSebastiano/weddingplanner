@@ -116,7 +116,8 @@
 }
 
 .fin .eyebrow {
-  @apply font-mono text-[11px] tracking-[0.12em] text-ink-faint;
+  /* Mismo rótulo que el Eyebrow del resto de la app (components/ui/card.tsx). */
+  @apply text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-faint;
 }
 
 .fin .input {

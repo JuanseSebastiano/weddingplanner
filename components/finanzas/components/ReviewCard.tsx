@@ -100,10 +100,10 @@ export function ReviewCard({ expense, categories, accounts, rules, onCreateRule 
     >
       <div className="flex flex-col gap-4 px-[22px] py-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="chip border border-pending/30 bg-pending/[0.14] font-mono text-[10.5px] tracking-[0.08em] text-pending">
+          <span className="chip border border-pending/30 bg-pending/[0.14] text-[11px] font-semibold uppercase tracking-[0.09em] text-pending">
             PENDIENTE · {conf.label}
           </span>
-          <span className="font-mono text-[10.5px] text-ink-faint">
+          <span className="text-[10.5px] text-ink-faint">
             {receivedLabel(expense.ingestion?.received_at ?? null)}
           </span>
         </div>
@@ -166,7 +166,7 @@ export function ReviewCard({ expense, categories, accounts, rules, onCreateRule 
               </select>
             </div>
             {appliedRule && (
-              <span className="font-mono text-[10px] text-ink-faint">
+              <span className="text-[10px] text-ink-faint">
                 REGLA · {appliedRule.name}
               </span>
             )}
@@ -175,7 +175,7 @@ export function ReviewCard({ expense, categories, accounts, rules, onCreateRule 
           <label className="flex flex-col gap-1.5">
             <span className="text-[11px] text-ink-muted">Tarjeta</span>
             <select
-              className="rounded-xl border border-dashed border-pending/40 bg-input px-3.5 py-3 font-mono text-base text-ink-soft outline-none transition-colors focus:border-solid focus:border-accent"
+              className="rounded-xl border border-dashed border-pending/40 bg-input px-3.5 py-3 text-base text-ink-soft outline-none transition-colors focus:border-solid focus:border-accent"
               value={accountId}
               onChange={(event) => setAccountId(event.target.value)}
             >
@@ -222,18 +222,18 @@ export function ReviewCard({ expense, categories, accounts, rules, onCreateRule 
       </div>
 
       <div className="flex flex-col gap-2.5 border-l border-wash/[0.06] bg-well px-[22px] py-5">
-        <span className="font-mono text-[10px] tracking-[0.1em] text-ink-faint">MAIL ORIGINAL</span>
+        <span className="text-[10px] tracking-[0.1em] text-ink-faint">MAIL ORIGINAL</span>
         <span className="text-[12.5px] text-ink-secondary">
           {expense.ingestion?.subject ?? 'Sin asunto'}
         </span>
-        <span className="truncate font-mono text-[11px] text-ink-faint">
+        <span className="truncate text-[11px] text-ink-faint">
           {expense.ingestion?.from_address ?? ''}
         </span>
-        <pre className="m-0 max-h-[190px] overflow-auto whitespace-pre-wrap rounded-xl border border-wash/[0.05] bg-input p-3 font-mono text-[11.5px] leading-relaxed text-ink-muted">
+        <pre className="m-0 max-h-[190px] overflow-auto whitespace-pre-wrap rounded-xl border border-wash/[0.05] bg-input p-3 text-[11.5px] leading-relaxed text-ink-muted">
           {expense.ingestion?.raw_snippet ?? 'El mail no dejó texto para mostrar.'}
         </pre>
         {expense.ingestion?.parser_id && (
-          <span className="font-mono text-[10px] text-ink-faint">
+          <span className="text-[10px] text-ink-faint">
             PARSER · {expense.ingestion.parser_id.toUpperCase()}
           </span>
         )}

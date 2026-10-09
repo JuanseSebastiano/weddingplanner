@@ -46,16 +46,16 @@ function HeroTotal({ data }: { data: DashboardSummary }) {
         gridRow: 'var(--hero-rows)',
       }}
     >
-      <span className="font-mono text-[10.5px] tracking-[0.12em] text-accent-soft">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-accent-soft">
         TOTAL DEL MES
       </span>
-      <span className="tabular text-[40px] font-semibold leading-none tracking-[-0.03em]">
+      <span className="tabular font-serif text-[44px] font-normal leading-none">
         {formatCurrency(data.month_total)}
       </span>
       <div className="flex flex-wrap items-center gap-2.5 text-[12.5px] text-ink-secondary">
         {delta !== null && (
           <span
-            className={`tabular inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono text-[11.5px] font-semibold ${
+            className={`tabular inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11.5px] font-semibold ${
               up ? 'bg-pending/[0.12] text-pending' : 'bg-accent/[0.12] text-accent-soft'
             }`}
           >
@@ -100,8 +100,8 @@ function Stat({ label, value, hint, tone = 'default', delay, to }: StatProps) {
       className={`flex h-full animate-[nf-rise_380ms_cubic-bezier(0.22,1,0.36,1)_both] flex-col justify-between gap-3 rounded-[18px] border bg-card px-[22px] py-5 shadow-card ${border}`}
       style={{ animationDelay: delay }}
     >
-      <span className="font-mono text-[10.5px] tracking-[0.12em] text-ink-faint">{label}</span>
-      <span className={`tabular text-[27px] font-semibold tracking-[-0.02em] ${text}`}>{value}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-faint">{label}</span>
+      <span className={`tabular font-serif text-[31px] font-normal ${text}`}>{value}</span>
       <span className="text-xs leading-snug text-ink-secondary">{hint}</span>
     </div>
   );
@@ -140,7 +140,7 @@ export function DashboardPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1.5">
           <span className="eyebrow">DASHBOARD DEL HOGAR</span>
-          <h1 className="m-0 text-[26px] font-semibold tracking-[-0.025em]">
+          <h1 className="m-0 font-serif text-2xl font-normal lg:text-[28px]">
             {formatMonthLabel(month)}
           </h1>
         </div>
@@ -155,7 +155,7 @@ export function DashboardPage() {
             >
               ‹
             </button>
-            <span className="px-2.5 font-mono text-xs text-ink-soft">{month}</span>
+            <span className="px-2.5 text-xs text-ink-soft">{month}</span>
             <button
               type="button"
               onClick={() => setMonth(addMonths(month, 1))}
