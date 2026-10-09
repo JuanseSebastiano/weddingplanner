@@ -154,7 +154,7 @@ export default async function InicioPage() {
       <ResumenFinanzas finanzas={finanzas} mes={mes} hoy={hoy} />
 
       {/* ---------- CASAMIENTO Y LUNA DE MIEL ---------- */}
-      <section className="grid gap-5 lg:grid-cols-2">
+      <section className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <Proyecto
           href="/boda"
           icono={<Heart className="h-4 w-4" />}
@@ -250,7 +250,7 @@ export default async function InicioPage() {
       )}
 
       {/* ---------- LO QUE VIENE ---------- */}
-      <section className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
+      <section className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
         <Card>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <CardTitle>Próximos vencimientos</CardTitle>
@@ -504,7 +504,7 @@ function Proyecto({
 }) {
   const dias = fecha ? diasHasta(fecha) : null;
   return (
-    <Card className="flex flex-col gap-4 p-5">
+    <Card className="flex min-w-0 flex-col gap-4 p-5">
       <Link href={href} className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <span className="flex items-center gap-1.5 text-sm font-semibold text-primary">
@@ -521,7 +521,7 @@ function Proyecto({
                   {dias > 0 ? (dias === 1 ? "día" : "días") : dias === 0 ? "¡es hoy!" : "días desde"}
                 </span>
               </p>
-              <p className="mt-1.5 truncate text-xs text-muted-foreground">
+              <p className="mt-1.5 line-clamp-2 text-xs text-muted-foreground">
                 {formatFecha(fecha)}
                 {detalle ? ` · ${detalle}` : ""}
               </p>
