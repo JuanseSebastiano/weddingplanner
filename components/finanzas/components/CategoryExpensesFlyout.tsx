@@ -61,10 +61,10 @@ export function CategoryExpensesFlyout({ categoryId, categoryName, month, onClos
       >
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-col gap-1">
-            <span className="font-mono text-[10.5px] tracking-[0.1em] text-ink-faint">
+            <span className="text-[10.5px] tracking-[0.1em] text-ink-faint">
               {items.length} {items.length === 1 ? 'GASTO' : 'GASTOS'} · CONFIRMADOS
             </span>
-            <h2 className="m-0 text-[18px] font-semibold">{categoryName}</h2>
+            <h2 className="m-0 font-serif text-xl font-normal leading-tight">{categoryName}</h2>
           </div>
           <button
             type="button"
@@ -110,7 +110,7 @@ export function CategoryExpensesFlyout({ categoryId, categoryName, month, onClos
                   <span className="truncate text-[13.5px] text-ink-primary">
                     {expense.merchant ?? '—'}
                   </span>
-                  <span className="font-mono text-[11px] text-ink-faint">
+                  <span className="text-[11px] text-ink-faint">
                     {formatDate(expense.expense_date)}
                     {expense.account ? ` · ${expense.account.name}` : ''}
                   </span>
@@ -125,7 +125,7 @@ export function CategoryExpensesFlyout({ categoryId, categoryName, month, onClos
 
         {items.length > 0 && (
           <div className="flex items-center justify-between gap-3 border-t border-wash/[0.07] pt-3">
-            <span className="font-mono text-[10.5px] tracking-[0.1em] text-ink-faint">TOTAL</span>
+            <span className="text-[10.5px] tracking-[0.1em] text-ink-faint">TOTAL</span>
             <span className="tabular text-[16px] font-semibold">{formatCurrency(total)}</span>
           </div>
         )}

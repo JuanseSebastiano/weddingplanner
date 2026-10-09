@@ -92,10 +92,10 @@ export function IncomeForm({ categories, accounts, income, onCancel, onDone }: P
       }}
     >
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="m-0 text-[15px] font-semibold">
+        <h2 className="m-0 text-lg font-semibold">
           {income ? 'Editar ingreso' : 'Nuevo ingreso'}
         </h2>
-        <span className="font-mono text-[10.5px] text-ink-faint">
+        <span className="text-[10.5px] text-ink-faint">
           {income ? `PATCH /api/incomes/${income.id.slice(0, 8)}` : 'POST /api/incomes'}
         </span>
       </div>

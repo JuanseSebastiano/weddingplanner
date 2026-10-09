@@ -46,7 +46,7 @@ export function CommitmentsCard() {
                   <span className="flex min-w-0 flex-col">
                     <span className="truncate text-ink-primary">{c.label}</span>
                     <span
-                      className={`font-mono text-[11px] ${c.due_date && c.due_date < today ? 'text-danger' : 'text-ink-faint'}`}
+                      className={`text-[11px] ${c.due_date && c.due_date < today ? 'text-danger' : 'text-ink-faint'}`}
                     >
                       {SOURCE_LABEL[c.source]} · {c.due_date ? formatDate(c.due_date) : 'sin fecha'}
                     </span>
@@ -69,7 +69,7 @@ export function CommitmentsCard() {
           <span className="eyebrow">PRESUPUESTO DEL VIAJE</span>
           {trip_budget.map((b) => (
             <div key={b.currency} className="flex flex-wrap items-baseline justify-between gap-2 text-[13px]">
-              <span className="tabular text-[20px] font-semibold text-ink-strong">
+              <span className="tabular font-serif text-[24px] font-normal text-ink-strong">
                 {formatCurrency(b.total, b.currency)}
               </span>
               <span className="text-ink-secondary">

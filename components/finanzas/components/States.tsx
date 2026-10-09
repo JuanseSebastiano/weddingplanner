@@ -37,7 +37,7 @@ export function EmptyState({ title, description, children, tone = 'neutral' }: E
         }`}
         aria-hidden
       />
-      <h2 className="m-0 text-[19px] font-semibold">{title}</h2>
+      <h2 className="m-0 font-serif text-xl font-normal leading-tight">{title}</h2>
       {description && (
         <p className="m-0 max-w-[52ch] text-sm leading-relaxed text-ink-secondary [text-wrap:pretty]">
           {description}
@@ -60,9 +60,9 @@ export function ErrorState({ source, title, description, onRetry }: ErrorStatePr
   return (
     <div className="flex flex-col items-start gap-3.5 rounded-[18px] border border-danger-strong/[0.28] bg-gradient-to-b from-danger-strong/[0.08] to-danger-strong/[0.02] px-8 py-8">
       {source && (
-        <span className="font-mono text-[11px] tracking-[0.1em] text-danger">{source}</span>
+        <span className="text-[11px] tracking-[0.1em] text-danger">{source}</span>
       )}
-      <h2 className="m-0 text-[19px] font-semibold">{title}</h2>
+      <h2 className="m-0 font-serif text-xl font-normal leading-tight">{title}</h2>
       {description && (
         <p className="m-0 max-w-[52ch] text-sm leading-relaxed text-ink-secondary [text-wrap:pretty]">
           {description}

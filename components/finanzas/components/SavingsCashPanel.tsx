@@ -144,10 +144,10 @@ export function SavingsCashPanel({ cash, movements, format, tickers }: Props) {
     >
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-1.5">
-          <span className="font-mono text-[10.5px] tracking-[0.12em] text-accent-soft">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-accent-soft">
             EFECTIVO SIN INVERTIR
           </span>
-          <span className="tabular text-[32px] font-semibold leading-none tracking-[-0.03em]">
+          <span className="tabular font-serif text-[36px] font-normal leading-none">
             {format(cash.available)}
           </span>
           <span className="text-[12.5px] text-ink-secondary">
@@ -199,7 +199,7 @@ export function SavingsCashPanel({ cash, movements, format, tickers }: Props) {
             <label className="flex flex-col gap-1.5">
               <span className="text-[11.5px] text-ink-muted">Ticker (BYMA)</span>
               <input
-                className="input font-mono uppercase"
+                className="input uppercase"
                 placeholder="AAPL"
                 list="nf-tickers"
                 value={ticker}
@@ -354,7 +354,7 @@ export function SavingsCashPanel({ cash, movements, format, tickers }: Props) {
                       {SAVINGS_MOVEMENT_LABELS[movement.kind]}
                       {movement.holding ? ` · ${movement.holding.ticker}` : ''}
                     </span>
-                    <span className="truncate font-mono text-[10.5px] text-ink-faint">
+                    <span className="truncate text-[10.5px] text-ink-faint">
                       {formatDate(movement.moved_at)}
                       {movement.profile ? ` · ${movement.profile.display_name}` : ''}
                       {movement.description ? ` · ${movement.description}` : ''}

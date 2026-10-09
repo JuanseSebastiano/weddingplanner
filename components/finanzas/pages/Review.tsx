@@ -48,11 +48,11 @@ export function ReviewPage() {
     <div className="flex flex-col gap-[18px]">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <span className="font-mono text-[11px] tracking-[0.12em] text-pending">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-pending">
             {items.length} {items.length === 1 ? 'PROPUESTA' : 'PROPUESTAS'} DEL PARSER · NINGUNA
             SUMA AL TOTAL
           </span>
-          <h1 className="m-0 text-[26px] font-semibold tracking-[-0.025em]">Revisión</h1>
+          <h1 className="m-0 font-serif text-2xl font-normal lg:text-[28px]">Revisión</h1>
           <p className="m-0 max-w-[62ch] text-[13.5px] leading-relaxed text-ink-muted [text-wrap:pretty]">
             Esto es lo que el parser entendió de cada mail de aviso. Corregí lo que haga falta y
             confirmá: recién ahí entra al total del mes.

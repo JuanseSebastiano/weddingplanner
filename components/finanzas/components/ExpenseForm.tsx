@@ -125,10 +125,10 @@ export function ExpenseForm({ categories, accounts, expense, onCancel, onDone }:
       }}
     >
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="m-0 text-[15px] font-semibold">
+        <h2 className="m-0 text-lg font-semibold">
           {expense ? 'Editar gasto' : toSavings ? 'Nueva transferencia a ahorros' : 'Nuevo gasto manual'}
         </h2>
-        <span className="font-mono text-[10.5px] text-ink-faint">
+        <span className="text-[10.5px] text-ink-faint">
           {expense
             ? `PATCH /api/expenses/${expense.id.slice(0, 8)}`
             : toSavings

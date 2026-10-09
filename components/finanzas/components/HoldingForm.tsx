@@ -99,10 +99,10 @@ export function HoldingForm({ holding, onCancel, onDone }: Props) {
       }}
     >
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="m-0 text-[15px] font-semibold">
+        <h2 className="m-0 text-lg font-semibold">
           {holding ? `Editar ${holding.ticker}` : 'Nueva tenencia'}
         </h2>
-        <span className="font-mono text-[10.5px] text-ink-faint">
+        <span className="text-[10.5px] text-ink-faint">
           {holding ? `PATCH /api/holdings/${holding.id.slice(0, 8)}` : 'POST /api/holdings'}
         </span>
       </div>
@@ -114,7 +114,7 @@ export function HoldingForm({ holding, onCancel, onDone }: Props) {
         <label className="flex flex-col gap-1.5">
           <span className="text-[11.5px] text-ink-muted">Ticker (BYMA)</span>
           <input
-            className="input font-mono uppercase"
+            className="input uppercase"
             placeholder="AAPL"
             value={ticker}
             onChange={(event) => setTicker(event.target.value)}

@@ -203,8 +203,8 @@ function Stat({ label, value, hint, tone }: StatProps) {
     <div
       className={`flex h-full animate-[nf-rise_380ms_cubic-bezier(0.22,1,0.36,1)_both] flex-col justify-between gap-3 rounded-[18px] border bg-card px-[22px] py-5 shadow-card ${border}`}
     >
-      <span className="font-mono text-[10.5px] tracking-[0.12em] text-ink-faint">{label}</span>
-      <span className={`tabular text-[27px] font-semibold tracking-[-0.02em] ${text}`}>{value}</span>
+      <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-faint">{label}</span>
+      <span className={`tabular font-serif text-[31px] font-normal ${text}`}>{value}</span>
       <span className="text-xs leading-snug text-ink-secondary">{hint}</span>
     </div>
   );
@@ -276,7 +276,7 @@ export function SavingsPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1.5">
           <span className="eyebrow">AHORROS · CEDEARS EN BALANZ</span>
-          <h1 className="m-0 text-[26px] font-semibold tracking-[-0.025em]">Cartera de inversión</h1>
+          <h1 className="m-0 font-serif text-2xl font-normal lg:text-[28px]">Cartera de inversión</h1>
         </div>
 
         <div className="flex items-center gap-2.5">
@@ -332,7 +332,7 @@ export function SavingsPage() {
         <>
           {!summary.quotes_available && (
             <div className="card-sunken flex items-center gap-2.5 px-[18px] py-3">
-              <span className="font-mono text-[10.5px] tracking-[0.08em] text-pending">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-pending">
                 COTIZACIONES NO DISPONIBLES
               </span>
               <span className="text-[12.5px] text-ink-secondary">
@@ -344,7 +344,7 @@ export function SavingsPage() {
 
           {currency === 'USD' && !canUseUsd && (
             <div className="card-sunken flex items-center gap-2.5 px-[18px] py-3">
-              <span className="font-mono text-[10.5px] tracking-[0.08em] text-pending">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-pending">
                 COTIZACIÓN DEL DÓLAR NO DISPONIBLE
               </span>
               <span className="text-[12.5px] text-ink-secondary">
@@ -355,7 +355,7 @@ export function SavingsPage() {
 
           {effectiveCurrency === 'USD' && summary.fx && (
             <div className="flex items-center gap-2 px-1">
-              <span className="font-mono text-[10.5px] tracking-[0.08em] text-ink-faint">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-faint">
                 US$ 1 = {formatCurrency(summary.fx.rate)} · {summary.fx.source} ·{' '}
                 {relativeTime(summary.fx.updated_at)}
               </span>
@@ -412,7 +412,7 @@ export function SavingsPage() {
       {positions.length > 0 && !cards && (
         <div className="overflow-hidden rounded-[18px] border border-wash/[0.06] bg-card shadow-card">
           <div
-            className="grid gap-3 border-b border-wash/[0.06] bg-sunken px-5 py-3 font-mono text-[10.5px] tracking-[0.08em] text-ink-faint"
+            className="grid gap-3 border-b border-wash/[0.06] bg-sunken px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.09em] text-ink-faint"
             style={{ gridTemplateColumns: '90px 90px 130px 130px 130px 120px 90px 80px' }}
           >
             <span>TICKER</span>
@@ -439,7 +439,7 @@ export function SavingsPage() {
                 }}
               >
                 <span className="flex flex-col gap-0.5">
-                  <span className="font-mono text-[13px] font-semibold text-ink-primary">
+                  <span className="text-[13px] font-semibold text-ink-primary">
                     {position.ticker}
                   </span>
                   <span className="truncate text-[10.5px] text-ink-faint">{position.broker}</span>
@@ -521,7 +521,7 @@ export function SavingsPage() {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex min-w-0 flex-col gap-0.5">
-                    <span className="font-mono text-[14.5px] font-semibold">{position.ticker}</span>
+                    <span className="text-[14.5px] font-semibold">{position.ticker}</span>
                     <span className="text-[11.5px] text-ink-secondary">
                       {position.quantity} · {position.broker}
                     </span>

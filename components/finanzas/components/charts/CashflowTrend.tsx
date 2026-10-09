@@ -109,13 +109,13 @@ export function CashflowTrend({ data, compact }: Props) {
                       columnas, flexbox comprimiría esas barras y la altura
                       dejaría de ser proporcional al monto. */}
                   <span
-                    className="tabular h-[14px] shrink-0 font-mono text-[10px] leading-[14px]"
+                    className="tabular h-[14px] shrink-0 text-[10px] leading-[14px]"
                     style={{ color: negative ? COLORS.danger : COLORS.accent }}
                   >
                     {short(point.net)}
                   </span>
                   <span
-                    className="h-[14px] shrink-0 font-mono text-[10.5px] leading-[14px]"
+                    className="h-[14px] shrink-0 text-[10.5px] leading-[14px]"
                     style={{ color: isLast ? COLORS.textBright : COLORS.textFaint }}
                   >
                     {monthLabel(point.month)}

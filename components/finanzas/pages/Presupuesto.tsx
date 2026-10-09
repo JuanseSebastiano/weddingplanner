@@ -50,14 +50,14 @@ export function PresupuestoPage() {
     <div className="flex flex-col gap-[18px]">
       <div className="flex flex-col gap-1.5">
         <span className="eyebrow">PROYECTOS DE LA PAREJA</span>
-        <h1 className="m-0 text-[26px] font-semibold text-ink-strong">Presupuesto</h1>
+        <h1 className="m-0 font-serif text-2xl font-normal lg:text-[28px]">Presupuesto</h1>
       </div>
 
       <div className="card flex flex-col gap-4 px-[22px] py-5">
         <span className="eyebrow">RESUMEN</span>
         <div className="flex flex-col gap-1">
           <span className="text-[13px] text-ink-secondary">{faltaArs > 0 ? 'Te falta ahorrar' : 'Ahorro de más'}</span>
-          <span className="tabular text-[28px] font-semibold text-ink-strong">
+          <span className="tabular font-serif text-[32px] font-normal text-ink-strong">
             {formatCurrency(Math.abs(faltaArs))}
           </span>
           {cotizacion ? (
@@ -94,7 +94,7 @@ export function PresupuestoPage() {
           <span className="eyebrow">BODA</span>
           {boda ? (
             <>
-              <span className="tabular text-[22px] font-semibold text-ink-strong">
+              <span className="tabular font-serif text-[26px] font-normal text-ink-strong">
                 {formatCurrency(boda.previsto.usd, 'USD')}
               </span>
               <span className="text-xs text-ink-faint">
@@ -115,7 +115,7 @@ export function PresupuestoPage() {
           )}
           {viaje.map((v) => (
             <div key={v.currency} className="flex flex-col gap-2">
-              <span className="tabular text-[22px] font-semibold text-ink-strong">
+              <span className="tabular font-serif text-[26px] font-normal text-ink-strong">
                 {formatCurrency(v.total, v.currency)}
               </span>
               <Linea label="Pagado" valor={formatCurrency(v.paid, v.currency)} />
@@ -138,7 +138,7 @@ export function PresupuestoPage() {
                     <span className="flex min-w-0 flex-col">
                       <span className="truncate text-ink-primary">{c.label}</span>
                       <span
-                        className={`font-mono text-[11px] ${c.due_date && c.due_date < today ? 'text-danger' : 'text-ink-faint'}`}
+                        className={`text-[11px] ${c.due_date && c.due_date < today ? 'text-danger' : 'text-ink-faint'}`}
                       >
                         {SOURCE_LABEL[c.source]} · {c.due_date ? formatDate(c.due_date) : 'sin fecha'}
                       </span>
