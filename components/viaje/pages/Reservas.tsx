@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, withId, PRECIO_VACIO, TIPOS_RESERVA, type Hotel, type TipoReserva } from '../db'
 import { Field, FormActions, Modal, PrecioMeta, conNota, fmtDate, usePrecio } from '../ui'
+import { FECHA_PRESUPUESTO, PRESUPUESTO_HOTELES } from '../presupuesto-hoteles'
 
 const EMPTY: Hotel = {
   tipo: 'Hotel',
@@ -110,8 +111,75 @@ export default function Reservas() {
         </div>
       ))}
 
+      <PresupuestoHoteles />
+
       {editing && <ReservaForm item={editing} onClose={() => setEditing(null)} />}
     </main>
+  )
+}
+
+const usd = (n: number) => `US$ ${n.toLocaleString('es-AR')}`
+
+function PresupuestoHoteles() {
+  let noches = 0
+  let top = 0
+  let eco = 0
+  for (const t of PRESUPUESTO_HOTELES) {
+    noches += t.noches
+    for (const o of t.opciones) {
+      if (o.top) top += o.precio! * t.noches
+      if (o.eco) eco += o.eco * t.noches
+    }
+  }
+
+  return (
+    <>
+      <div className="section-title">Presupuesto de hoteles</div>
+      <div className="card">
+        <div className="meta">
+          {noches} noches · Precios Booking al {FECHA_PRESUPUESTO}, 2 adultos, impuestos incluidos. Crucero (18–25/4) no
+          incluido.
+          <br />
+          ⭐ Opción top: <strong>{usd(top)}</strong> ({usd(Math.round(top / noches))}/noche)
+          <br />
+          💰 Opción económica: <strong>{usd(eco)}</strong> ({usd(Math.round(eco / noches))}/noche)
+        </div>
+      </div>
+
+      {PRESUPUESTO_HOTELES.map((t) => (
+        <div className="card" key={t.ciudad}>
+          <div className="card-head">
+            <h3>🏨 {t.ciudad}</h3>
+            <span className="badge info">
+              {t.fechas} · {t.noches} {t.noches === 1 ? 'noche' : 'noches'}
+            </span>
+          </div>
+          {t.opciones.map((o) => (
+            <div className="meta" key={o.nombre} style={{ marginTop: 8 }}>
+              <a href={o.link} target="_blank" rel="noreferrer">
+                <strong>{o.nombre}</strong>
+              </a>{' '}
+              {o.top && <span className="badge ok">Top</span>} {o.eco && <span className="badge warn">Económica</span>}
+              <br />
+              {o.precio !== null ? (
+                <>
+                  {usd(o.precio)}/noche · total <strong>{usd(o.precio * t.noches)}</strong>
+                </>
+              ) : (
+                o.estado
+              )}
+              {' · '}Desayuno: {o.desayuno} · {o.distancia}
+              {o.nota && (
+                <>
+                  <br />
+                  📝 {o.nota}
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      ))}
+    </>
   )
 }
 
