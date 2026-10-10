@@ -124,8 +124,11 @@ function PresupuestoHoteles() {
   let noches = 0
   let top = 0
   let eco = 0
+  let prom = 0
   for (const t of PRESUPUESTO_HOTELES) {
     noches += t.noches
+    const precios = t.opciones.filter((o) => o.precio !== null).map((o) => o.precio!)
+    prom += (precios.reduce((a, b) => a + b, 0) / precios.length) * t.noches
     for (const o of t.opciones) {
       if (o.top) top += o.precio! * t.noches
       if (o.eco) eco += o.eco * t.noches
@@ -140,19 +143,28 @@ function PresupuestoHoteles() {
           {noches} noches · Precios Booking al {FECHA_PRESUPUESTO}, 2 adultos, impuestos incluidos. Crucero (18–25/4) no
           incluido.
           <br />
+          📊 Promedio por ciudad (cargado en Reservas): <strong>{usd(Math.round(prom * 100) / 100)}</strong>
+          <br />
           ⭐ Opción top: <strong>{usd(top)}</strong> ({usd(Math.round(top / noches))}/noche)
           <br />
           💰 Opción económica: <strong>{usd(eco)}</strong> ({usd(Math.round(eco / noches))}/noche)
         </div>
       </div>
 
-      {PRESUPUESTO_HOTELES.map((t) => (
+      {PRESUPUESTO_HOTELES.map((t) => {
+        const precios = t.opciones.filter((o) => o.precio !== null).map((o) => o.precio!)
+        const promedio = precios.reduce((a, b) => a + b, 0) / precios.length
+        return (
         <div className="card" key={t.ciudad}>
           <div className="card-head">
             <h3>🏨 {t.ciudad}</h3>
             <span className="badge info">
               {t.fechas} · {t.noches} {t.noches === 1 ? 'noche' : 'noches'}
             </span>
+          </div>
+          <div className="meta">
+            Promedio: {usd(Math.round(promedio * 100) / 100)}/noche · presupuesto{' '}
+            <strong>{usd(Math.round(promedio * t.noches * 100) / 100)}</strong>
           </div>
           {t.opciones.map((o) => (
             <div className="meta" key={o.nombre} style={{ marginTop: 8 }}>
@@ -178,7 +190,8 @@ function PresupuestoHoteles() {
             </div>
           ))}
         </div>
-      ))}
+        )
+      })}
     </>
   )
 }
