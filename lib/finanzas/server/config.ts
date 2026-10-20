@@ -86,7 +86,7 @@ export const config = {
      */
     searchQuery: optional(
       'GMAIL_SEARCH_QUERY',
-      '(label:BANCOS OR from:(visa.com OR santander.com.ar OR bancogalicia.com.ar OR bbva.com.ar OR mercadopago.com OR naranja.com OR naranjax.com))',
+      '(label:BANCOS OR from:(visa.com OR santander.com.ar OR bancogalicia.com.ar OR bbva.com.ar OR mercadopago.com OR naranja.com OR naranjax.com OR balanz.com))',
     ),
     /** Clave hex de 32 bytes para cifrar el refresh token (AES-256-GCM). */
     encryptionKey: optional('GMAIL_TOKEN_ENCRYPTION_KEY'),

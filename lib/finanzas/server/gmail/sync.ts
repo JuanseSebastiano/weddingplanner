@@ -4,6 +4,7 @@ import { supabaseAdmin } from '../lib/supabase';
 import { authorizedClient, listCredentials, loadCredential, type GmailCredentialRow } from './oauth';
 import { normalizeMessage } from './message';
 import { parseEmail } from './parsers/index';
+import { applyBalanzEmail, isBalanzBoletos } from './balanz';
 import type { NormalizedEmail, ParsedNotification } from './parsers/types';
 import { findMatchingRule, loadRules } from '../services/rules-engine';
 
@@ -123,6 +124,11 @@ export async function ingestEmail(
   email: NormalizedEmail,
 ): Promise<'created' | 'duplicate' | 'failed'> {
   if (await alreadyIngested(context.userId, email.id)) return 'duplicate';
+
+  // Antes de la cadena de parsers: el genérico lo tomaría como una compra.
+  if (isBalanzBoletos(email)) {
+    return applyBalanzEmail(context, email, (fields) => logIngestion(context, email, fields));
+  }
 
   const result = parseEmail(email);
 

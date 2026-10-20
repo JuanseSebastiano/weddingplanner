@@ -521,6 +521,8 @@ export function useGmailSync() {
     mutationFn: () => api.post<SyncResult>('/gmail/sync'),
     onSuccess: () => {
       invalidateExpenseViews(queryClient);
+      // Los boletos de Balanz actualizan las tenencias.
+      invalidatePortfolioViews(queryClient);
       void queryClient.invalidateQueries({ queryKey: ['gmail-log'] });
       void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
