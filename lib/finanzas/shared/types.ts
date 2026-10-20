@@ -503,6 +503,38 @@ export interface CashflowSummary {
   trend: CashflowPoint[];
 }
 
+/** Un mes del cash flow proyectado. Todo en pesos. */
+export interface ProjectionMonth {
+  /** Formato YYYY-MM. */
+  month: string;
+  /** Ingreso estimado (promedio de los meses base). */
+  income: number;
+  /** Gasto de vida estimado (promedio de los meses base). */
+  living: number;
+  /** Pagos programados de la boda que vencen ese mes. */
+  boda: number;
+  /** Pagos programados del viaje (luna de miel) que vencen ese mes. */
+  viaje: number;
+  /** living + boda + viaje. */
+  expense: number;
+  net: number;
+  /** Saldo acumulado al cierre del mes, arrancando del ahorro actual. */
+  balance: number;
+}
+
+export interface CashflowProjection {
+  /** Meses cerrados usados para el promedio, YYYY-MM. */
+  base_months: string[];
+  income_avg: number;
+  expense_avg: number;
+  /** Ahorro actual (tenencias + efectivo apartado), en pesos. */
+  saldo_inicial: number;
+  cotizacion: number | null;
+  months: ProjectionMonth[];
+  /** Pagos impagos sin fecha: no entran al acumulado. */
+  sin_fecha: { boda: number; viaje: number };
+}
+
 export interface ApiError {
   error: string;
   details?: unknown;

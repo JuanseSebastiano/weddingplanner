@@ -5,6 +5,7 @@ import type {
   CommitmentsSummary,
   BudgetInput,
   BudgetWithCategory,
+  CashflowProjection,
   CashflowSummary,
   CategorizationRule,
   Category,
@@ -147,6 +148,14 @@ export function useCashflow(month: string) {
   return useQuery({
     queryKey: ['cashflow', month, user_id],
     queryFn: () => api.get<CashflowSummary>(`/cashflow${toQueryString({ month, user_id })}`),
+  });
+}
+
+/** Bajo ['cashflow'] para que lo invaliden los cambios de gastos e ingresos. */
+export function useProjection() {
+  return useQuery({
+    queryKey: ['cashflow', 'projection'],
+    queryFn: () => api.get<CashflowProjection>('/cashflow/projection'),
   });
 }
 

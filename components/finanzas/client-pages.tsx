@@ -15,3 +15,4 @@ export const SavingsPage = dynamic(() => import('./pages/Savings').then((m) => m
 export const ReviewPage = dynamic(() => import('./pages/Review').then((m) => m.ReviewPage), { ssr: false });
 export const SettingsPage = dynamic(() => import('./pages/Settings').then((m) => m.SettingsPage), { ssr: false });
 export const PresupuestoPage = dynamic(() => import('./pages/Presupuesto').then((m) => m.PresupuestoPage), { ssr: false });
+export const ProyeccionPage = dynamic(() => import('./pages/Proyeccion').then((m) => m.ProyeccionPage), { ssr: false });
