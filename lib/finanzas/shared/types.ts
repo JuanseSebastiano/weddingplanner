@@ -4,7 +4,7 @@
  */
 
 export type AccountType = 'credit_card' | 'debit_card' | 'bank_account' | 'cash' | 'other';
-export type ExpenseSource = 'manual' | 'email';
+export type ExpenseSource = 'manual' | 'email' | 'shortcut';
 export type ExpenseStatus = 'pending' | 'confirmed' | 'discarded';
 /** Un rubro sirve para gastos o para ingresos, nunca para los dos. */
 export type CategoryKind = 'expense' | 'income';

@@ -40,6 +40,8 @@ export interface MeResponse {
     address: string | null;
     last_synced_at: string | null;
   };
+  /** Token del atajo de Apple Pay de esta persona. */
+  shortcut_token: string | null;
 }
 
 export interface SyncResult {

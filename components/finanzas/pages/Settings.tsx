@@ -76,6 +76,59 @@ function Panel({
   );
 }
 
+function ApplePayPanel() {
+  const me = useMe();
+  const [copied, setCopied] = useState<string | null>(null);
+  const token = me.data?.shortcut_token;
+  if (!token) return null;
+
+  const url = `${window.location.origin}/api/fin/atajo/gasto`;
+  const copy = (label: string, value: string) => {
+    void navigator.clipboard.writeText(value).then(() => setCopied(label));
+  };
+  const campos = [
+    { label: 'URL', value: url },
+    { label: 'Encabezado Authorization', value: `Bearer ${token}` },
+  ];
+
+  return (
+    <Panel title="Gastos con Apple Pay">
+      <span className="text-[12.5px] text-ink-muted">
+        Cada pago sin contacto con el iPhone se carga solo como gasto confirmado. Si después llega el mail del banco por
+        el mismo consumo, no se duplica.
+      </span>
+      {campos.map((c) => (
+        <div key={c.label} className="flex flex-col gap-1">
+          <span className="text-[11px] text-ink-faint">{c.label}</span>
+          <div className="flex items-center gap-2">
+            <code className="min-w-0 flex-1 truncate rounded-lg bg-sunken px-2.5 py-1.5 text-[12px]">{c.value}</code>
+            <button type="button" className="btn-secondary" onClick={() => copy(c.label, c.value)}>
+              {copied === c.label ? 'Copiado' : 'Copiar'}
+            </button>
+          </div>
+        </div>
+      ))}
+      <details>
+        <summary className="cursor-pointer text-[12.5px] text-accent-soft">Cómo armar el atajo</summary>
+        <ol className="m-0 mt-2 flex flex-col gap-1.5 pl-5 text-[12.5px] text-ink-muted">
+          <li>Atajos → Automatización → Nueva automatización → Wallet.</li>
+          <li>Elegí tus tarjetas y marcá “Ejecutar inmediatamente”.</li>
+          <li>Agregá la acción “Obtener contenido de URL” con la URL de arriba.</li>
+          <li>Método POST. Encabezado: Authorization = el valor de arriba.</li>
+          <li>
+            Cuerpo JSON: <code>amount</code> = Importe, <code>merchant</code> = Comercio, <code>card</code> = Tarjeta
+            (variables de la entrada del atajo).
+          </li>
+          <li>Opcional: “Mostrar notificación” con el resultado.</li>
+        </ol>
+        <span className="mt-2 block text-[11px] text-ink-faint">
+          El token es personal: los gastos quedan a tu nombre. No lo compartas.
+        </span>
+      </details>
+    </Panel>
+  );
+}
+
 function GmailPanel() {
   const me = useMe();
   const connect = useGmailConnect();
@@ -852,6 +905,7 @@ export function SettingsPage() {
       </div>
 
       <GmailPanel />
+      <ApplePayPanel />
 
       <div
         className="grid items-start gap-3.5"
