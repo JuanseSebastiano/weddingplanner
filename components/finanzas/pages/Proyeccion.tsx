@@ -45,6 +45,7 @@ export function ProyeccionPage() {
   const { months, sin_fecha } = data;
   const final = months[months.length - 1]?.balance ?? data.saldo_inicial;
   const base = data.base_months.map((m) => MONTH_ABBR[Number(m.slice(5)) - 1]).join(', ');
+  const ultimo = formatMonthLabel(data.base_months[data.base_months.length - 1]).toLowerCase();
   const sinFecha = sin_fecha.boda + sin_fecha.viaje;
 
   return (
@@ -74,7 +75,7 @@ export function ProyeccionPage() {
           <Dato label="Saldo inicial" valor={data.saldo_inicial} nota="Ahorro actual" />
         </div>
         <span className="text-xs text-ink-faint">
-          Ingresos y gastos estimados con el promedio de {base}. En pesos; los pagos en dólares se convierten con su
+          Ingreso estimado con el de {ultimo}; gastos con el promedio de {base}. En pesos; los pagos en dólares se convierten con su
           cotización o la actual.
         </span>
       </div>

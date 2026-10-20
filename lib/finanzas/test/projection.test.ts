@@ -27,11 +27,15 @@ describe('monthlyAverage', () => {
 describe('buildProjection', () => {
   const base = {
     month: '2026-10',
-    incomes: [row('2026-07-01', 1000), row('2026-08-01', 1000), row('2026-09-01', 1000)],
+    incomes: [row('2026-07-01', 5000), row('2026-08-01', 3000), row('2026-09-01', 1000)],
     expenses: [row('2026-07-01', 600), row('2026-08-01', 600), row('2026-09-01', 600)],
     rate: 1000,
     saldo_inicial: 500,
   };
+
+  it('toma el ingreso del último mes cerrado', () => {
+    expect(buildProjection({ ...base, commitments: [] }).income_avg).toBe(1000);
+  });
 
   it('proyecta al menos MIN_HORIZON meses con saldo acumulado', () => {
     const p = buildProjection({ ...base, commitments: [] });

@@ -507,7 +507,7 @@ export interface CashflowSummary {
 export interface ProjectionMonth {
   /** Formato YYYY-MM. */
   month: string;
-  /** Ingreso estimado (promedio de los meses base). */
+  /** Ingreso estimado (el del último mes cerrado). */
   income: number;
   /** Gasto de vida estimado (promedio de los meses base). */
   living: number;
@@ -525,6 +525,7 @@ export interface ProjectionMonth {
 export interface CashflowProjection {
   /** Meses cerrados usados para el promedio, YYYY-MM. */
   base_months: string[];
+  /** Ingreso del último mes cerrado. */
   income_avg: number;
   expense_avg: number;
   /** Ahorro actual (tenencias + efectivo apartado), en pesos. */

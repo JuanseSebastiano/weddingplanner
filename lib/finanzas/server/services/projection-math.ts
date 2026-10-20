@@ -1,5 +1,6 @@
 /**
- * Lógica pura del cash flow proyectado: promedio de los meses base y
+ * Lógica pura del cash flow proyectado: ingreso del último mes cerrado,
+ * gasto promedio de los meses base y
  * pagos programados de boda y viaje repartidos por mes. Sin base de datos.
  */
 import { addMonths, type CashflowProjection, type Commitment, type ProjectionMonth } from '@nf/shared';
@@ -36,7 +37,8 @@ export interface ProjectionInput {
 export function buildProjection(input: ProjectionInput): CashflowProjection {
   const { month, rate } = input;
   const base = baseMonths(month);
-  const incomeAvg = monthlyAverage(input.incomes, base);
+  // El ingreso se toma del último mes cerrado, no del promedio.
+  const incomeAvg = monthlyAverage(input.incomes, base.slice(-1));
   const expenseAvg = monthlyAverage(input.expenses, base);
 
   const toArs = (c: Commitment) => (c.currency === 'ARS' ? c.amount : c.amount * (c.fx_rate ?? rate ?? 0));
