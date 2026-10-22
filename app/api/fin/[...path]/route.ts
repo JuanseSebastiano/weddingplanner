@@ -13,6 +13,7 @@ import { accountsRouter } from "@/lib/finanzas/server/routes/accounts";
 import { dashboardRouter } from "@/lib/finanzas/server/routes/dashboard";
 import { reviewRouter } from "@/lib/finanzas/server/routes/review";
 import { rulesRouter } from "@/lib/finanzas/server/routes/rules";
+import { billsRouter } from "@/lib/finanzas/server/routes/bills";
 import { gmailRouter } from "@/lib/finanzas/server/routes/gmail";
 import { shortcutRouter } from "@/lib/finanzas/server/routes/shortcut";
 
@@ -40,6 +41,7 @@ const MOUNTS = [
   { prefix: "/dashboard", router: dashboardRouter, before: auth },
   { prefix: "/review", router: reviewRouter, before: auth },
   { prefix: "/rules", router: rulesRouter, before: auth },
+  { prefix: "/bills", router: billsRouter, before: auth },
 ];
 
 function handler(request: Request) {

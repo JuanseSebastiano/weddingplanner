@@ -536,6 +536,26 @@ export interface CashflowProjection {
   sin_fecha: { boda: number; viaje: number };
 }
 
+/** Pago fijo mensual (alquiler, servicios, gimnasio…). */
+export interface Bill {
+  id: string;
+  user_id: string;
+  name: string;
+  /** null hasta que llega la boleta. */
+  amount: number | null;
+  currency: 'ARS' | 'USD';
+  /** Día del mes en que vence (1–31). */
+  due_day: number;
+}
+
+/** Un pago fijo en un mes puntual. */
+export interface BillOfMonth extends Bill {
+  owner: string;
+  /** Vencimiento en ese mes, YYYY-MM-DD (el día se ajusta a meses cortos). */
+  due_date: string;
+  paid: boolean;
+}
+
 export interface ApiError {
   error: string;
   details?: unknown;

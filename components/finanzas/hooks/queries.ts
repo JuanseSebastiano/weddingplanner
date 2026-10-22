@@ -3,6 +3,7 @@ import type {
   Account,
   AvailableSummary,
   CommitmentsSummary,
+  BillOfMonth,
   BudgetInput,
   BudgetWithCategory,
   CashflowProjection,
@@ -158,6 +159,14 @@ export function useProjection() {
   return useQuery({
     queryKey: ['cashflow', 'projection'],
     queryFn: () => api.get<CashflowProjection>('/cashflow/projection'),
+  });
+}
+
+export function useBills(month: string) {
+  const user_id = usePersona();
+  return useQuery({
+    queryKey: ['bills', month, user_id],
+    queryFn: () => api.get<BillOfMonth[]>(`/bills${toQueryString({ month, user_id })}`),
   });
 }
 
@@ -545,5 +554,33 @@ export function useGmailDisconnect() {
   return useMutation({
     mutationFn: () => api.delete<void>('/gmail/connection'),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['me'] }),
+  });
+}
+
+// --- Pagos fijos ------------------------------------------------------
+
+export function useSaveBill() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...input }: { id?: string } & Record<string, unknown>) =>
+      id ? api.patch(`/bills/${id}`, input) : api.post('/bills', input),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['bills'] }),
+  });
+}
+
+export function useDeleteBill() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<void>(`/bills/${id}`),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['bills'] }),
+  });
+}
+
+export function useMarkBillPaid() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, month, paid }: { id: string; month: string; paid: boolean }) =>
+      api.post<void>(`/bills/${id}/paid`, { month, paid }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['bills'] }),
   });
 }

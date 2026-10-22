@@ -16,3 +16,4 @@ export const ReviewPage = dynamic(() => import('./pages/Review').then((m) => m.R
 export const SettingsPage = dynamic(() => import('./pages/Settings').then((m) => m.SettingsPage), { ssr: false });
 export const PresupuestoPage = dynamic(() => import('./pages/Presupuesto').then((m) => m.PresupuestoPage), { ssr: false });
 export const ProyeccionPage = dynamic(() => import('./pages/Proyeccion').then((m) => m.ProyeccionPage), { ssr: false });
+export const PagosPage = dynamic(() => import('./pages/Pagos').then((m) => m.PagosPage), { ssr: false });

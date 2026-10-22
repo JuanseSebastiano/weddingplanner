@@ -38,6 +38,7 @@ const SECCIONES_BODA = [
 const SECCIONES_FINANZAS = [
   { href: "/finanzas", label: "Resumen" },
   { href: "/finanzas/gastos", label: "Gastos" },
+  { href: "/finanzas/pagos", label: "Pagos fijos" },
   { href: "/finanzas/balance", label: "Ingresos y egresos" },
   { href: "/finanzas/cashflow", label: "Cash flow" },
   { href: "/finanzas/ahorros", label: "Ahorros" },
