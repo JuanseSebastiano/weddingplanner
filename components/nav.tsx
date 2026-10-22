@@ -31,6 +31,7 @@ const SECCIONES_BODA = [
   { href: "/boda/tareas", label: "Tareas" },
   { href: "/boda/proveedores", label: "Proveedores" },
   { href: "/boda/comparador", label: "Comparador" },
+  { href: "/boda/musica", label: "Música" },
   { href: "/boda/ideas", label: "Ideas" },
   { href: "/boda/agenda-del-dia", label: "Agenda del día" },
 ];
