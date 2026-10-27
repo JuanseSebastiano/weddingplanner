@@ -126,3 +126,18 @@ ${balanzFila(['11.611.874', 'COMPRA', 'NVDA', 'CEDEAR NVIDIA CORPORATION', '21',
 </table>
 <p>Desde la plataforma web tendrás acceso a más información de estas operaciones.</p>
 </body></html>`;
+
+/** Estructura real del mail de Balanz (26/10/2026): cada celda es un <p> dentro del <td>. */
+const celdas = (cells: string[]) =>
+  `<tr style="width: 100%;">${cells.map((c) => `<td style="width: 5% ;"><p style="line-height: 1.5;">${c}</p></td>`).join('')}</tr>`;
+
+export const balanzBoletosRealHtml = `<html><head><title>Boletos</title><style type="text/css">table.boleto td {padding: 6px 8px;}</style></head><body>
+<span class="font-header">Boletos</span>
+<h2 class="null font-title">Operaciones concertadas el <span style="font-weight: bold;">26/10/2026</span></h2>
+<table class="boleto"><thead><tr><th><p>#Boleto</p></th><th><p>Tipo</p></th><th><p>Ticker</p></th><th><p>Descripción</p></th><th><p>Cant.</p></th><th><p>Precio</p></th><th><p>Bruto</p></th><th><p>Arancel</p></th><th><p>IVA</p></th><th><p>Der. <br/>Mercado</p></th><th><p>Neto</p></th><th><p>Moneda</p></th><th><p>Fecha <br/>Liqui.</p></th></tr></thead>
+<span><tbody>
+${celdas(['12.135.252', 'VENTA', 'ADBE', 'CEDEAR  ADOBE SYSTEMS INCORPORATED', '187', 'usd 6,23', 'usd 1.165,01', 'usd 11,65', '$ 3.929,02', '$ 890,94', 'usd 1.153,36', 'Dólar MEP', '27/10/2026'])}
+${celdas(['12.135.253', 'COMPRA', 'NU', 'CEDEAR NU HOLDINGS LTD/CAYMAN ISLANDS', '176', 'usd 6,64', 'usd 1.168,64', 'usd 11,69', '$ 3.942,45', '$ 893,72', 'usd 1.180,33', 'Dólar MEP', '27/10/2026'])}
+</tbody></span></table>
+<p>Desde la plataforma web tendrás acceso a más información de estas operaciones.</p>
+</body></html>`;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyOperation, isBalanzBoletos, parseBalanzBoletos, type BalanzOperation } from '../server/gmail/balanz';
 import { htmlToText } from '../server/gmail/message';
-import { balanzBoletosHtml, email } from './fixtures/emails';
+import { balanzBoletosHtml, balanzBoletosRealHtml, email } from './fixtures/emails';
 
 const boletos = email({
   id: 'balanz-1',
@@ -26,6 +26,21 @@ describe('parseBalanzBoletos', () => {
       { boleto: '11.611.872', tipo: 'VENTA', ticker: 'META', cantidad: 37, neto: 1219.78, moneda: 'USD' },
       { boleto: '11.611.875', tipo: 'COMPRA', ticker: 'ASML', cantidad: 40, neto: 495.71, moneda: 'USD' },
       { boleto: '11.611.874', tipo: 'COMPRA', ticker: 'NVDA', cantidad: 21, neto: 211.25, moneda: 'USD' },
+    ]);
+  });
+});
+
+describe('mail real de Balanz', () => {
+  it('lee la venta y la compra del 26/10', () => {
+    const real = email({
+      from: 'Balanz <boletos@balanz.com>',
+      subject: 'Resumen de boletos de las operaciones del día',
+      body: htmlToText(balanzBoletosRealHtml),
+    });
+    expect(isBalanzBoletos(real)).toBe(true);
+    expect(parseBalanzBoletos(real)).toEqual([
+      { boleto: '12.135.252', tipo: 'VENTA', ticker: 'ADBE', cantidad: 187, neto: 1153.36, moneda: 'USD' },
+      { boleto: '12.135.253', tipo: 'COMPRA', ticker: 'NU', cantidad: 176, neto: 1180.33, moneda: 'USD' },
     ]);
   });
 });
