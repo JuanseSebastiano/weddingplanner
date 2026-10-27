@@ -3,7 +3,7 @@
  * de Wallet y decide cuenta y duplicados, sin base de datos.
  */
 import { z } from 'zod';
-import { parseAmount } from '@nf/shared';
+import { formatCurrency, parseAmount } from '@nf/shared';
 import { cleanMerchant, detectCurrency, normalizeText } from '../gmail/parsers/common';
 
 const payloadSchema = z.object({
@@ -80,4 +80,21 @@ export function dayWindow(date: string): { from: string; to: string } {
     from: new Date(t - day).toISOString().slice(0, 10),
     to: new Date(t + day).toISOString().slice(0, 10),
   };
+}
+
+/** Texto de la notificación del atajo: lo muestra tal cual "Mostrar notificación". */
+export function mensajeAtajo(g: {
+  amount: number;
+  currency: string;
+  merchant: string | null;
+  rubro: string | null;
+  cuenta: string | null;
+  confirmado: boolean;
+}): string {
+  const monto = formatCurrency(g.amount, g.currency).replace(/,00$/, '');
+  const titulo = `✅ ${monto}${g.merchant ? ` en ${g.merchant}` : ''}`;
+  const detalle = [g.rubro, g.cuenta, g.confirmado ? 'ya había llegado el mail, quedó confirmado' : null]
+    .filter(Boolean)
+    .join(' · ');
+  return detalle ? `${titulo}\n${detalle}` : titulo;
 }

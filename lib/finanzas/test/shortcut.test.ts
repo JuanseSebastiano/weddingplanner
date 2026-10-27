@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dayWindow, isSameCharge, matchAccount, parseShortcutPayload, todayAr } from '../server/services/shortcut';
+import { dayWindow, isSameCharge, matchAccount, mensajeAtajo, parseShortcutPayload, todayAr } from '../server/services/shortcut';
 
 const ACCOUNTS = [
   { id: 'visa', name: 'Visa Galicia', last4: '1234' },
@@ -55,5 +55,22 @@ describe('fechas', () => {
   it('usa la fecha de Argentina', () => {
     expect(todayAr(new Date('2026-10-21T02:00:00Z'))).toBe('2026-10-20');
     expect(dayWindow('2026-11-01')).toEqual({ from: '2026-10-31', to: '2026-11-02' });
+  });
+});
+
+describe('mensajeAtajo', () => {
+  const base = { amount: 14667, currency: 'ARS', merchant: 'Express Teodoro Garcia 23', rubro: null, cuenta: null, confirmado: false };
+
+  it('muestra monto y comercio en una línea', () => {
+    expect(mensajeAtajo(base)).toMatch(/^✅ \$\s?14\.667 en Express Teodoro Garcia 23$/);
+  });
+
+  it('suma rubro, cuenta y si venía del mail en la segunda línea', () => {
+    const texto = mensajeAtajo({ ...base, rubro: 'Supermercado', cuenta: 'Visa Galicia', confirmado: true });
+    expect(texto.split('\n')[1]).toBe('Supermercado · Visa Galicia · ya había llegado el mail, quedó confirmado');
+  });
+
+  it('conserva los centavos y funciona sin comercio', () => {
+    expect(mensajeAtajo({ ...base, amount: 1500.5, merchant: null })).toMatch(/^✅ \$\s?1\.500,50$/);
   });
 });

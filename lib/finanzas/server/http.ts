@@ -23,6 +23,7 @@ export interface Request {
 export interface Response {
   status(code: number): Response;
   json(body: unknown): void;
+  text(body: string): void;
   end(): void;
   redirect(url: string): void;
 }
@@ -131,6 +132,9 @@ export async function dispatch(
     },
     json(payload) {
       result = Response.json(payload, { status });
+    },
+    text(body) {
+      result = new Response(body, { status, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
     },
     end() {
       result = new Response(null, { status });
