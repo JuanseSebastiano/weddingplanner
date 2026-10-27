@@ -5,6 +5,7 @@ import { asyncHandler, badRequest } from '../lib/errors';
 import type { AuthedRequest } from '../middleware/auth';
 import { personaDe } from '../lib/persona';
 import { getCashflowSummary, listLedger } from '../services/cashflow';
+import { getCashflowProjection } from '../services/projection';
 
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida, se espera YYYY-MM-DD');
 const monthSchema = z.string().regex(/^\d{4}-\d{2}$/, 'Mes inválido, se espera YYYY-MM');
@@ -41,5 +42,13 @@ cashflowRouter.get(
 
     const result = await listLedger(req.auth.coupleId, parsed.data);
     res.json(result);
+  }),
+);
+
+/** Cash flow proyectado de la pareja hasta el último pago de boda o viaje. */
+cashflowRouter.get(
+  '/projection',
+  asyncHandler<AuthedRequest>(async (req, res) => {
+    res.json(await getCashflowProjection(req.auth.coupleId));
   }),
 );

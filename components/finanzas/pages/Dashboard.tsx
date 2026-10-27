@@ -12,6 +12,7 @@ import {
 import { useDashboard } from '../hooks/queries';
 import { AvailableCard } from '../components/AvailableCard';
 import { CommitmentsCard } from '../components/CommitmentsCard';
+import { BillsCard } from '../components/BillsCard';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { CategoryDonut } from '../components/charts/CategoryDonut';
 import { UserSplit } from '../components/charts/UserSplit';
@@ -269,6 +270,7 @@ export function DashboardPage() {
       )}
 
       {/* Lo que viene (disponible y compromisos) va al final: arriba manda el mes. */}
+      <BillsCard />
       <AvailableCard />
       <CommitmentsCard />
 

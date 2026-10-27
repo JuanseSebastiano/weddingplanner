@@ -109,3 +109,20 @@ export const noRelacionado = email({
   body: 'Mirá las novedades que preparamos para vos.',
   snippet: 'Nuevos productos de la semana',
 });
+
+/** Boletos de Balanz: tabla HTML con una fila por operación (datos de un mail real). */
+const balanzFila = (cells: string[]) => `<tr>${cells.map((c) => `<td>${c}</td>`).join('')}</tr>`;
+
+export const balanzBoletosHtml = `<html><body>
+<h1>Boletos</h1>
+<p>Operaciones concertadas el <b>13/10/2026</b></p>
+<p>Comitente: <b>SEBASTIANO JUAN SEGUNDO</b></p><p>Número: <b>481.349</b></p>
+<table>
+${balanzFila(['#Boleto', 'Tipo', 'Ticker', 'Descripción', 'Cant.', 'Precio', 'Bruto', 'Arancel', 'IVA', 'Der. Mercado', 'Neto', 'Moneda', 'Fecha Liqui.'])}
+${balanzFila(['11.611.873', 'COMPRA', 'AMZN', 'CEDEAR AMAZON.COM, INC', '259', 'usd 1,895', 'usd 490,81', 'usd 4,91', '$ 1.642,36', '$ 372,28', 'usd 495,72', 'Dólar MEP', '14/10/2026'])}
+${balanzFila(['11.611.872', 'VENTA', 'META', 'CEDEAR META PLATFORMS INC.', '37', 'usd 33,30', 'usd 1.232,10', 'usd 12,32', '$ 4.121,03', '$ 934,55', 'usd 1.219,78', 'Dólar MEP', '14/10/2026'])}
+${balanzFila(['11.611.875', 'COMPRA', 'ASML', 'CEDEAR ASML HOLDING NV', '40', 'usd 12,27', 'usd 490,80', 'usd 4,91', '$ 1.642,36', '$ 372,27', 'usd 495,71', 'Dólar MEP', '14/10/2026'])}
+${balanzFila(['11.611.874', 'COMPRA', 'NVDA', 'CEDEAR NVIDIA CORPORATION', '21', 'usd 9,96', 'usd 209,16', 'usd 2,09', '$ 699,13', '$ 158,64', 'usd 211,25', 'Dólar MEP', '14/10/2026'])}
+</table>
+<p>Desde la plataforma web tendrás acceso a más información de estas operaciones.</p>
+</body></html>`;

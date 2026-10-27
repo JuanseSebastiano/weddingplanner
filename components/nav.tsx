@@ -31,6 +31,7 @@ const SECCIONES_BODA = [
   { href: "/boda/tareas", label: "Tareas" },
   { href: "/boda/proveedores", label: "Proveedores" },
   { href: "/boda/comparador", label: "Comparador" },
+  { href: "/boda/musica", label: "Música" },
   { href: "/boda/ideas", label: "Ideas" },
   { href: "/boda/agenda-del-dia", label: "Agenda del día" },
 ];
@@ -38,7 +39,9 @@ const SECCIONES_BODA = [
 const SECCIONES_FINANZAS = [
   { href: "/finanzas", label: "Resumen" },
   { href: "/finanzas/gastos", label: "Gastos" },
+  { href: "/finanzas/pagos", label: "Pagos fijos" },
   { href: "/finanzas/balance", label: "Ingresos y egresos" },
+  { href: "/finanzas/cashflow", label: "Cash flow" },
   { href: "/finanzas/ahorros", label: "Ahorros" },
   { href: "/finanzas/presupuesto", label: "Presupuesto" },
   { href: "/finanzas/revision", label: "Revisión" },

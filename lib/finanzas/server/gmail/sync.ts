@@ -4,8 +4,10 @@ import { supabaseAdmin } from '../lib/supabase';
 import { authorizedClient, listCredentials, loadCredential, type GmailCredentialRow } from './oauth';
 import { normalizeMessage } from './message';
 import { parseEmail } from './parsers/index';
+import { applyBalanzEmail, isBalanzBoletos } from './balanz';
 import type { NormalizedEmail, ParsedNotification } from './parsers/types';
 import { findMatchingRule, loadRules } from '../services/rules-engine';
+import { dayWindow, isSameCharge } from '../services/shortcut';
 
 export interface SyncResult {
   user_id: string;
@@ -124,6 +126,11 @@ export async function ingestEmail(
 ): Promise<'created' | 'duplicate' | 'failed'> {
   if (await alreadyIngested(context.userId, email.id)) return 'duplicate';
 
+  // Antes de la cadena de parsers: el genérico lo tomaría como una compra.
+  if (isBalanzBoletos(email)) {
+    return applyBalanzEmail(context, email, (fields) => logIngestion(context, email, fields));
+  }
+
   const result = parseEmail(email);
 
   if (!result) {
@@ -159,6 +166,38 @@ export async function ingestEmail(
   // Otro proceso lo tomó entre el chequeo y el insert.
   if (!ingestionId) return 'duplicate';
 
+  // Si Apple Pay ya lo cargó, se vincula el mail a ese gasto y no se duplica.
+  const date = parsed.date ?? new Date().toISOString().slice(0, 10);
+  const { from, to } = dayWindow(date);
+  const { data: fromShortcut, error: shortcutError } = await supabaseAdmin
+    .from('fin_expenses')
+    .select('id, amount, currency, expense_date')
+    .eq('user_id', context.userId)
+    .eq('source', 'shortcut')
+    .is('email_ingestion_id', null)
+    .gte('expense_date', from)
+    .lte('expense_date', to);
+  if (shortcutError) throw shortcutError;
+  const twin = (fromShortcut ?? []).find((e) =>
+    isSameCharge({ amount: parsed.amount, currency: parsed.currency, date }, {
+      amount: e.amount,
+      currency: e.currency,
+      date: e.expense_date,
+    }),
+  );
+  if (twin) {
+    const [expenseRes, logRes] = await Promise.all([
+      supabaseAdmin.from('fin_expenses').update({ email_ingestion_id: ingestionId }).eq('id', twin.id),
+      supabaseAdmin
+        .from('fin_email_ingestion_log')
+        .update({ parse_status: 'duplicate', expense_id: twin.id, error_detail: 'Ya cargado por Apple Pay' })
+        .eq('id', ingestionId),
+    ]);
+    if (expenseRes.error) throw expenseRes.error;
+    if (logRes.error) throw logRes.error;
+    return 'duplicate';
+  }
+
   // Las reglas proponen un rubro; el usuario lo puede cambiar al confirmar.
   const rules = await loadRules(context.coupleId);
   const match = findMatchingRule(rules, {
@@ -178,7 +217,7 @@ export async function ingestEmail(
       currency: parsed.currency,
       merchant: parsed.merchant,
       description: email.subject.slice(0, 500),
-      expense_date: parsed.date ?? new Date().toISOString().slice(0, 10),
+      expense_date: date,
       source: 'email',
       status: 'pending',
       email_ingestion_id: ingestionId,

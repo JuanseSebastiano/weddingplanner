@@ -13,7 +13,9 @@ import { accountsRouter } from "@/lib/finanzas/server/routes/accounts";
 import { dashboardRouter } from "@/lib/finanzas/server/routes/dashboard";
 import { reviewRouter } from "@/lib/finanzas/server/routes/review";
 import { rulesRouter } from "@/lib/finanzas/server/routes/rules";
+import { billsRouter } from "@/lib/finanzas/server/routes/bills";
 import { gmailRouter } from "@/lib/finanzas/server/routes/gmail";
+import { shortcutRouter } from "@/lib/finanzas/server/routes/shortcut";
 
 // La sincronización de Gmail (manual o por cron) puede tardar.
 export const maxDuration = 60;
@@ -24,6 +26,8 @@ const auth = [requireAuth];
 // router: el callback de OAuth, el cron y el webhook se autentican solos.
 const MOUNTS = [
   { prefix: "/gmail", router: gmailRouter },
+  // El atajo de Apple Pay se autentica con el token de la persona.
+  { prefix: "/atajo", router: shortcutRouter },
   { prefix: "/me", router: meRouter, before: auth },
   { prefix: "/expenses", router: expensesRouter, before: auth },
   { prefix: "/incomes", router: incomesRouter, before: auth },
@@ -37,6 +41,7 @@ const MOUNTS = [
   { prefix: "/dashboard", router: dashboardRouter, before: auth },
   { prefix: "/review", router: reviewRouter, before: auth },
   { prefix: "/rules", router: rulesRouter, before: auth },
+  { prefix: "/bills", router: billsRouter, before: auth },
 ];
 
 function handler(request: Request) {

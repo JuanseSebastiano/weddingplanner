@@ -3,8 +3,10 @@ import type {
   Account,
   AvailableSummary,
   CommitmentsSummary,
+  BillOfMonth,
   BudgetInput,
   BudgetWithCategory,
+  CashflowProjection,
   CashflowSummary,
   CategorizationRule,
   Category,
@@ -39,6 +41,8 @@ export interface MeResponse {
     address: string | null;
     last_synced_at: string | null;
   };
+  /** Token del atajo de Apple Pay de esta persona. */
+  shortcut_token: string | null;
 }
 
 export interface SyncResult {
@@ -147,6 +151,22 @@ export function useCashflow(month: string) {
   return useQuery({
     queryKey: ['cashflow', month, user_id],
     queryFn: () => api.get<CashflowSummary>(`/cashflow${toQueryString({ month, user_id })}`),
+  });
+}
+
+/** Bajo ['cashflow'] para que lo invaliden los cambios de gastos e ingresos. */
+export function useProjection() {
+  return useQuery({
+    queryKey: ['cashflow', 'projection'],
+    queryFn: () => api.get<CashflowProjection>('/cashflow/projection'),
+  });
+}
+
+export function useBills(month: string) {
+  const user_id = usePersona();
+  return useQuery({
+    queryKey: ['bills', month, user_id],
+    queryFn: () => api.get<BillOfMonth[]>(`/bills${toQueryString({ month, user_id })}`),
   });
 }
 
@@ -512,6 +532,8 @@ export function useGmailSync() {
     mutationFn: () => api.post<SyncResult>('/gmail/sync'),
     onSuccess: () => {
       invalidateExpenseViews(queryClient);
+      // Los boletos de Balanz actualizan las tenencias.
+      invalidatePortfolioViews(queryClient);
       void queryClient.invalidateQueries({ queryKey: ['gmail-log'] });
       void queryClient.invalidateQueries({ queryKey: ['me'] });
     },
@@ -532,5 +554,33 @@ export function useGmailDisconnect() {
   return useMutation({
     mutationFn: () => api.delete<void>('/gmail/connection'),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['me'] }),
+  });
+}
+
+// --- Pagos fijos ------------------------------------------------------
+
+export function useSaveBill() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...input }: { id?: string } & Record<string, unknown>) =>
+      id ? api.patch(`/bills/${id}`, input) : api.post('/bills', input),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['bills'] }),
+  });
+}
+
+export function useDeleteBill() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<void>(`/bills/${id}`),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['bills'] }),
+  });
+}
+
+export function useMarkBillPaid() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, month, paid }: { id: string; month: string; paid: boolean }) =>
+      api.post<void>(`/bills/${id}/paid`, { month, paid }),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['bills'] }),
   });
 }

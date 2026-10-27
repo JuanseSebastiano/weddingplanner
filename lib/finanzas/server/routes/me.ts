@@ -13,7 +13,7 @@ export const meRouter = Router();
 meRouter.get(
   '/',
   asyncHandler<AuthedRequest>(async (req, res) => {
-    const [householdRes, membersRes, gmailRes] = await Promise.all([
+    const [householdRes, membersRes, gmailRes, tokenRes] = await Promise.all([
       supabaseAdmin.from('couples').select('id, name:nombre').eq('id', req.auth.coupleId).maybeSingle(),
       supabaseAdmin
         .from('couple_members')
@@ -26,9 +26,10 @@ meRouter.get(
         .select('gmail_address, last_synced_at')
         .eq('user_id', req.auth.userId)
         .maybeSingle(),
+      supabaseAdmin.from('couple_members').select('shortcut_token').eq('user_id', req.auth.userId).maybeSingle(),
     ]);
 
-    for (const result of [householdRes, membersRes, gmailRes]) {
+    for (const result of [householdRes, membersRes, gmailRes, tokenRes]) {
       if (result.error) throw result.error;
     }
 
@@ -46,6 +47,7 @@ meRouter.get(
         address: gmailRes.data?.gmail_address ?? null,
         last_synced_at: gmailRes.data?.last_synced_at ?? null,
       },
+      shortcut_token: tokenRes.data?.shortcut_token ?? null,
     });
   }),
 );

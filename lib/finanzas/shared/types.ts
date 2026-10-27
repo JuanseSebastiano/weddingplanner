@@ -4,7 +4,7 @@
  */
 
 export type AccountType = 'credit_card' | 'debit_card' | 'bank_account' | 'cash' | 'other';
-export type ExpenseSource = 'manual' | 'email';
+export type ExpenseSource = 'manual' | 'email' | 'shortcut';
 export type ExpenseStatus = 'pending' | 'confirmed' | 'discarded';
 /** Un rubro sirve para gastos o para ingresos, nunca para los dos. */
 export type CategoryKind = 'expense' | 'income';
@@ -501,6 +501,59 @@ export interface CashflowSummary {
   by_income_category: CategoryTotal[];
   /** 12 meses hasta el consultado. */
   trend: CashflowPoint[];
+}
+
+/** Un mes del cash flow proyectado. Todo en pesos. */
+export interface ProjectionMonth {
+  /** Formato YYYY-MM. */
+  month: string;
+  /** Ingreso estimado (el del último mes cerrado). */
+  income: number;
+  /** Gasto de vida estimado (promedio de los meses base). */
+  living: number;
+  /** Pagos programados de la boda que vencen ese mes. */
+  boda: number;
+  /** Pagos programados del viaje (luna de miel) que vencen ese mes. */
+  viaje: number;
+  /** living + boda + viaje. */
+  expense: number;
+  net: number;
+  /** Saldo acumulado al cierre del mes, arrancando del ahorro actual. */
+  balance: number;
+}
+
+export interface CashflowProjection {
+  /** Meses cerrados usados para el promedio, YYYY-MM. */
+  base_months: string[];
+  /** Ingreso del último mes cerrado. */
+  income_avg: number;
+  expense_avg: number;
+  /** Ahorro actual (tenencias + efectivo apartado), en pesos. */
+  saldo_inicial: number;
+  cotizacion: number | null;
+  months: ProjectionMonth[];
+  /** Pagos impagos sin fecha: no entran al acumulado. */
+  sin_fecha: { boda: number; viaje: number };
+}
+
+/** Pago fijo mensual (alquiler, servicios, gimnasio…). */
+export interface Bill {
+  id: string;
+  user_id: string;
+  name: string;
+  /** null hasta que llega la boleta. */
+  amount: number | null;
+  currency: 'ARS' | 'USD';
+  /** Día del mes en que vence (1–31). */
+  due_day: number;
+}
+
+/** Un pago fijo en un mes puntual. */
+export interface BillOfMonth extends Bill {
+  owner: string;
+  /** Vencimiento en ese mes, YYYY-MM-DD (el día se ajusta a meses cortos). */
+  due_date: string;
+  paid: boolean;
 }
 
 export interface ApiError {

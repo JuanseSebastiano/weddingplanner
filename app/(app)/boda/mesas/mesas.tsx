@@ -8,15 +8,21 @@ import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { crearMesa, actualizarMesa, borrarMesa, asignarAMesa } from "./actions";
+import { Plano, type Elemento } from "./plano";
 
-type Mesa = {
+export type Mesa = {
   id: string;
   numero: number;
   capacidad: number;
   ubicacion: string | null;
+  forma: "redonda" | "rectangular";
+  x: number | null;
+  y: number | null;
+  ancho: number;
+  largo: number;
 };
 
-type Invitado = {
+export type Invitado = {
   id: string;
   nombre: string;
   grupo: string | null;
@@ -28,10 +34,13 @@ type Invitado = {
 export function Mesas({
   mesas,
   invitados,
+  elementos,
 }: {
   mesas: Mesa[];
   invitados: Invitado[];
+  elementos: Elemento[];
 }) {
+  const [vista, setVista] = useState<"lista" | "plano">("lista");
   const [seleccion, setSeleccion] = useState<string[]>([]);
   const [editando, setEditando] = useState<Mesa | null>(null);
   const [nuevaAbierta, setNuevaAbierta] = useState(false);
@@ -80,6 +89,21 @@ export function Mesas({
         </Sheet>
       </div>
 
+      <div className="mt-3 inline-flex rounded-xl border border-border bg-card p-1 text-sm">
+        {(["lista", "plano"] as const).map((v) => (
+          <button
+            key={v}
+            onClick={() => setVista(v)}
+            className={cn(
+              "rounded-lg px-3 py-1",
+              vista === v ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+            )}
+          >
+            {v === "lista" ? "Lista" : "Plano"}
+          </button>
+        ))}
+      </div>
+
       <p className="mt-1 text-sm text-muted-foreground">
         {sinMesa.length > 0
           ? `${sinMesa.length} invitados sin mesa`
@@ -90,7 +114,9 @@ export function Mesas({
           ` · ${sobrecargadas.length} mesas pasadas de capacidad`}
       </p>
 
-      {mesas.length === 0 ? (
+      {vista === "plano" ? (
+        <Plano mesas={mesas} invitados={invitados} elementos={elementos} />
+      ) : mesas.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center">
           <p className="font-serif text-lg font-normal">Todavía no hay mesas</p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -196,7 +222,7 @@ export function Mesas({
         </div>
       )}
 
-      {sinMesa.length > 0 && (
+      {vista === "lista" && sinMesa.length > 0 && (
         <section
           className="mt-6"
           onDragOver={(e) => e.preventDefault()}
