@@ -183,6 +183,19 @@ select fin_crear_hogar('mama@mail.com', 'Mamá');            -- devuelve el id d
 select fin_crear_hogar('papa@mail.com', 'Papá', '<id>');    -- segunda persona, mismo hogar
 ```
 
+**Login con código por mail:** en `/login` se pone el email y llega un código
+(`signInWithOtp` con `shouldCreateUser: false`, así nadie se registra solo).
+La contraseña sigue como alternativa. Configuración en Supabase:
+
+- Authentication → Email Templates → **Magic Link**: el cuerpo tiene que usar
+  `{{ .Token }}` (no `{{ .ConfirmationURL }}`), si no llega un link en vez del
+  código. Por ejemplo: `<h2>Tu código para entrar</h2><p>{{ .Token }}</p>`.
+- Authentication → SMTP Settings: cargar un SMTP propio (Gmail con
+  contraseña de aplicación, Resend, etc.). El SMTP que trae Supabase solo
+  manda a los emails del equipo del proyecto y con un límite muy bajo por hora.
+- El usuario se crea igual en Authentication → Users (con "Auto Confirm
+  User"; la contraseña puede ser cualquiera si va a entrar con código).
+
 Todas las tablas de dominio tienen `couple_id` (con default `my_couple_id()`,
 así los inserts no necesitan mandarlo) y una policy
 `is_couple_member(couple_id)` para `authenticated`. Storage usa el mismo
