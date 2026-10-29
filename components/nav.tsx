@@ -69,12 +69,24 @@ function esActiva(pathname: string, href: string, exacta = false) {
 }
 
 /** Menú lateral, sólo de 1024px para arriba. */
-export function Sidebar({ nombres }: { nombres: string }) {
+export function Sidebar({
+  nombres,
+  soloFinanzas,
+}: {
+  nombres: string;
+  soloFinanzas?: boolean;
+}) {
   const pathname = usePathname();
+  const modulos = soloFinanzas
+    ? MODULOS.filter((m) => m.href === "/finanzas")
+    : MODULOS;
 
   return (
     <aside className="no-print sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col border-r border-border bg-card px-3.5 pb-4 pt-5 lg:flex">
-      <Link href="/" className="mb-5 flex items-center gap-2.5 px-2.5">
+      <Link
+        href={soloFinanzas ? "/finanzas" : "/"}
+        className="mb-5 flex items-center gap-2.5 px-2.5"
+      >
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary font-serif text-lg leading-none text-primary-foreground">
           {nombres
             .split(" & ")
@@ -87,7 +99,7 @@ export function Sidebar({ nombres }: { nombres: string }) {
       </Link>
 
       <nav className="flex flex-col gap-0.5 overflow-y-auto">
-        {MODULOS.map(({ href, label, icon: Icon }) => {
+        {modulos.map(({ href, label, icon: Icon }) => {
           const activa = esActiva(pathname, href);
           return (
             <div key={href}>
@@ -109,24 +121,29 @@ export function Sidebar({ nombres }: { nombres: string }) {
               </Link>
               {SECCIONES[href] && activa && (
                 <div className="my-1 ml-6 flex flex-col border-l border-border-soft pl-2">
-                  {SECCIONES[href].map((s) => {
-                    const sub = esActiva(pathname, s.href, s.href === href);
-                    return (
-                      <Link
-                        key={s.href}
-                        href={s.href}
-                        aria-current={sub ? "page" : undefined}
-                        className={cn(
-                          "rounded-lg px-2.5 py-1.5 text-[13px]",
-                          sub
-                            ? "font-semibold text-primary-ink"
-                            : "text-muted-foreground hover:bg-muted",
-                        )}
-                      >
-                        {s.label}
-                      </Link>
-                    );
-                  })}
+                  {SECCIONES[href]
+                    .filter(
+                      (s) =>
+                        !soloFinanzas || s.href !== "/finanzas/presupuesto",
+                    )
+                    .map((s) => {
+                      const sub = esActiva(pathname, s.href, s.href === href);
+                      return (
+                        <Link
+                          key={s.href}
+                          href={s.href}
+                          aria-current={sub ? "page" : undefined}
+                          className={cn(
+                            "rounded-lg px-2.5 py-1.5 text-[13px]",
+                            sub
+                              ? "font-semibold text-primary-ink"
+                              : "text-muted-foreground hover:bg-muted",
+                          )}
+                        >
+                          {s.label}
+                        </Link>
+                      );
+                    })}
                 </div>
               )}
             </div>
@@ -175,31 +192,39 @@ export function BottomNav() {
 }
 
 /** Tira de secciones de un módulo, sólo en celular (en escritorio están en el lateral). */
-export function ModuloTabs({ modulo }: { modulo: "/boda" | "/finanzas" | "/viaje" }) {
+export function ModuloTabs({
+  modulo,
+  soloFinanzas,
+}: {
+  modulo: "/boda" | "/finanzas" | "/viaje";
+  soloFinanzas?: boolean;
+}) {
   const pathname = usePathname();
 
   return (
     <nav className="no-print -mx-4 mb-4 overflow-x-auto px-4 lg:hidden">
       <ul className="flex w-max gap-1.5">
-        {SECCIONES[modulo].map((s) => {
-          const activa = esActiva(pathname, s.href, s.href === modulo);
-          return (
-            <li key={s.href}>
-              <Link
-                href={s.href}
-                aria-current={activa ? "page" : undefined}
-                className={cn(
-                  "block whitespace-nowrap rounded-full border px-3 py-1.5 text-[13px]",
-                  activa
-                    ? "border-primary bg-primary-soft font-semibold text-primary-ink"
-                    : "border-border bg-card text-muted-foreground",
-                )}
-              >
-                {s.label}
-              </Link>
-            </li>
-          );
-        })}
+        {SECCIONES[modulo]
+          .filter((s) => !soloFinanzas || s.href !== "/finanzas/presupuesto")
+          .map((s) => {
+            const activa = esActiva(pathname, s.href, s.href === modulo);
+            return (
+              <li key={s.href}>
+                <Link
+                  href={s.href}
+                  aria-current={activa ? "page" : undefined}
+                  className={cn(
+                    "block whitespace-nowrap rounded-full border px-3 py-1.5 text-[13px]",
+                    activa
+                      ? "border-primary bg-primary-soft font-semibold text-primary-ink"
+                      : "border-border bg-card text-muted-foreground",
+                  )}
+                >
+                  {s.label}
+                </Link>
+              </li>
+            );
+          })}
       </ul>
     </nav>
   );
