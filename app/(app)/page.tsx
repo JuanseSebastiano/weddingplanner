@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   AlertTriangle,
   ArrowDownRight,
@@ -44,6 +45,9 @@ function porcentaje(parte: number, total: number) {
 
 export default async function InicioPage() {
   const supabase = await createClient();
+  const { data: pareja } = await supabase.from("couples").select("solo_finanzas").limit(1).maybeSingle();
+  if (pareja?.solo_finanzas) redirect("/finanzas");
+
   const {
     data: { user },
   } = await supabase.auth.getUser();

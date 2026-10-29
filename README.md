@@ -153,6 +153,7 @@ Están versionadas en `supabase/migrations/` y se aplican en orden:
 | `0007_finanzas.sql` | Tablas `fin_*`, RLS por pareja, rubros por defecto y vistas del disponible real |
 | `0008_viaje.sql` | Tablas `trip_*` con id uuid, `updated_at` del servidor, `deleted_at` y RLS por pareja |
 | `0009_integraciones.sql` | Vistas `fin_commitments`, `fin_card_next_due` y `trip_budget` |
+| `0014_hogares_finanzas.sql` | `couples.solo_finanzas` y `fin_crear_hogar()` para familiares que usan solo Finanzas |
 
 Con la CLI de Supabase, contra el proyecto remoto:
 
@@ -170,6 +171,17 @@ entorno aparte y se aplican a producción con OK explícito.
 Login con email y contraseña. No hay registro público: los usuarios se crean
 en Supabase → Authentication → Users y se vinculan a su pareja con una fila en
 `couple_members` (`user_id`).
+
+**Familiares (solo Finanzas):** cada uno tiene su propio hogar (una fila en
+`couples` con `solo_finanzas`), así no ve nada de la pareja ni la pareja lo
+suyo. Solo ven Finanzas: Inicio, Boda, Viaje y Presupuesto redirigen a
+`/finanzas`. Para darlo de alta, crear el usuario en Authentication → Users y
+en el SQL Editor:
+
+```sql
+select fin_crear_hogar('mama@mail.com', 'Mamá');            -- devuelve el id del hogar
+select fin_crear_hogar('papa@mail.com', 'Papá', '<id>');    -- segunda persona, mismo hogar
+```
 
 Todas las tablas de dominio tienen `couple_id` (con default `my_couple_id()`,
 así los inserts no necesitan mandarlo) y una policy
