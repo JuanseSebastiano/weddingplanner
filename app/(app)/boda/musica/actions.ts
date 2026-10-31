@@ -37,14 +37,17 @@ export async function importarPlaylist(link: string) {
   const id = playlistId(link);
   if (!id) return { error: "Ese link no parece una playlist de Spotify." };
 
+  const supabase = await createClient();
+  const { data: coupleId } = await supabase.rpc("my_couple_id");
+  if (!coupleId) return { error: "Tu usuario no pertenece a ninguna pareja." };
+
   let temas;
   try {
-    temas = await conPreviews(await temasDePlaylist(id));
+    temas = await conPreviews(await temasDePlaylist(coupleId, id));
   } catch (e) {
     return { error: (e as Error).message };
   }
 
-  const supabase = await createClient();
   const { data: existentes, error: exError } = await supabase.from("wedding_songs").select("spotify_id");
   if (exError) return { error: exError.message };
   const ya = new Set((existentes ?? []).map((s) => s.spotify_id));

@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { spotifyConfigurado } from "@/lib/spotify";
+import { spotifyConectado, spotifyConfigurado } from "@/lib/spotify";
 import { Musica } from "./musica";
 
-export default async function MusicaPage() {
+export default async function MusicaPage({ searchParams }: PageProps<"/boda/musica">) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("wedding_songs")
@@ -10,5 +10,15 @@ export default async function MusicaPage() {
     .order("orden")
     .order("created_at");
 
-  return <Musica canciones={data ?? []} spotify={spotifyConfigurado()} />;
+  const { data: coupleId } = await supabase.rpc("my_couple_id");
+  const conectado = spotifyConfigurado() && coupleId ? await spotifyConectado(coupleId) : false;
+
+  return (
+    <Musica
+      canciones={data ?? []}
+      spotify={spotifyConfigurado()}
+      conectado={conectado}
+      errorSpotify={(await searchParams).spotify === "error"}
+    />
+  );
 }

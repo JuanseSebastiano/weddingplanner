@@ -21,7 +21,17 @@ type Cancion = {
 };
 
 /** La banda sonora de la boda, momento por momento, con preview para escuchar. */
-export function Musica({ canciones, spotify }: { canciones: Cancion[]; spotify: boolean }) {
+export function Musica({
+  canciones,
+  spotify,
+  conectado,
+  errorSpotify,
+}: {
+  canciones: Cancion[];
+  spotify: boolean;
+  conectado: boolean;
+  errorSpotify: boolean;
+}) {
   const audio = useRef<HTMLAudioElement>(null);
   const [sonando, setSonando] = useState<string | null>(null);
   const [embed, setEmbed] = useState<string | null>(null);
@@ -91,17 +101,29 @@ export function Musica({ canciones, spotify }: { canciones: Cancion[]; spotify: 
       </p>
       <audio ref={audio} onEnded={() => setSonando(null)} className="hidden" />
 
-      <form onSubmit={importar} className="mt-4 flex gap-2">
-        <Input
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-          placeholder="Link de una playlist de Spotify"
-          disabled={!spotify}
-        />
-        <Button type="submit" disabled={!spotify || !link || pendiente}>
-          {pendiente ? "Importando…" : "Importar"}
-        </Button>
-      </form>
+      {spotify && !conectado ? (
+        <div className="mt-4">
+          <Button asChild>
+            <a href="/api/spotify/login">Conectar Spotify</a>
+          </Button>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Para importar playlists, Spotify pide entrar con la cuenta dueña de la playlist (o que colabore en ella).
+          </p>
+          {errorSpotify && <p className="mt-1 text-sm text-danger">No se pudo conectar Spotify. Probá de nuevo.</p>}
+        </div>
+      ) : (
+        <form onSubmit={importar} className="mt-4 flex gap-2">
+          <Input
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+            placeholder="Link de una playlist de Spotify"
+            disabled={!spotify}
+          />
+          <Button type="submit" disabled={!spotify || !link || pendiente}>
+            {pendiente ? "Importando…" : "Importar"}
+          </Button>
+        </form>
+      )}
       {!spotify && (
         <p className="mt-1 text-xs text-muted-foreground">
           Para importar de Spotify falta cargar SPOTIFY_CLIENT_ID y SPOTIFY_CLIENT_SECRET en Vercel. Mientras, podés
