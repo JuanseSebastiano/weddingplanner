@@ -2,6 +2,7 @@ import { Router } from '../http';
 import { z } from 'zod';
 import { currentMonth } from '@nf/shared';
 import { asyncHandler, badRequest } from '../lib/errors';
+import { supabaseAdmin } from '../lib/supabase';
 import type { AuthedRequest } from '../middleware/auth';
 import { personaDe } from '../lib/persona';
 import { getCashflowSummary, listLedger } from '../services/cashflow';
@@ -49,6 +50,32 @@ cashflowRouter.get(
 cashflowRouter.get(
   '/projection',
   asyncHandler<AuthedRequest>(async (req, res) => {
+    res.json(await getCashflowProjection(req.auth.coupleId));
+  }),
+);
+
+/** Gasto del mes cargado a mano para un mes proyectado; null vuelve al promedio. */
+cashflowRouter.patch(
+  '/projection/:month',
+  asyncHandler<AuthedRequest>(async (req, res) => {
+    const month = monthSchema.safeParse(req.params.month);
+    const body = z.object({ living: z.number().min(0).nullable() }).safeParse(req.body);
+    if (!month.success || !body.success) throw badRequest('Gasto inválido');
+
+    const { error } =
+      body.data.living === null
+        ? await supabaseAdmin
+            .from('fin_projection_living')
+            .delete()
+            .eq('couple_id', req.auth.coupleId)
+            .eq('month', month.data)
+        : await supabaseAdmin.from('fin_projection_living').upsert({
+            couple_id: req.auth.coupleId,
+            month: month.data,
+            living: body.data.living,
+            updated_at: new Date().toISOString(),
+          });
+    if (error) throw error;
     res.json(await getCashflowProjection(req.auth.coupleId));
   }),
 );

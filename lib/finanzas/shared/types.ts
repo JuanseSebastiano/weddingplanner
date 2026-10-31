@@ -509,8 +509,10 @@ export interface ProjectionMonth {
   month: string;
   /** Ingreso estimado (el del último mes cerrado). */
   income: number;
-  /** Gasto de vida estimado (promedio de los meses base). */
+  /** Gasto de vida: el cargado a mano o, si no, el promedio de los meses base. */
   living: number;
+  /** true si `living` se cargó a mano para ese mes. */
+  living_editado: boolean;
   /** Pagos programados de la boda que vencen ese mes. */
   boda: number;
   /** Pagos programados del viaje (luna de miel) que vencen ese mes. */

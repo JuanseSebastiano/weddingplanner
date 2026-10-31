@@ -22,7 +22,7 @@ export async function getCashflowProjection(coupleId: string): Promise<CashflowP
   const from = monthBounds(base[0]).start;
   const to = monthBounds(base[base.length - 1]).end;
 
-  const [incomesRes, expensesRes, compromisosRes, weddingRes, portfolio] = await Promise.all([
+  const [incomesRes, expensesRes, compromisosRes, weddingRes, livingRes, portfolio] = await Promise.all([
     supabaseAdmin
       .from('fin_incomes')
       .select('amount, currency, fx_rate, category_id, income_date')
@@ -42,9 +42,10 @@ export async function getCashflowProjection(coupleId: string): Promise<CashflowP
       .eq('couple_id', coupleId)
       .in('source', ['boda', 'viaje']),
     supabaseAdmin.from('wedding_info').select('cotizacion_referencia').eq('couple_id', coupleId).maybeSingle(),
+    supabaseAdmin.from('fin_projection_living').select('month, living').eq('couple_id', coupleId).gte('month', month),
     getPortfolioSummary(coupleId),
   ]);
-  for (const res of [incomesRes, expensesRes, compromisosRes, weddingRes]) {
+  for (const res of [incomesRes, expensesRes, compromisosRes, weddingRes, livingRes]) {
     if (res.error) throw res.error;
   }
 
@@ -80,5 +81,6 @@ export async function getCashflowProjection(coupleId: string): Promise<CashflowP
     ),
     rate,
     saldo_inicial: portfolio.total_savings,
+    living: Object.fromEntries((livingRes.data ?? []).map((row) => [row.month, toNumber(row.living)])),
   });
 }

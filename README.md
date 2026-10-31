@@ -155,6 +155,7 @@ Están versionadas en `supabase/migrations/` y se aplican en orden:
 | `0009_integraciones.sql` | Vistas `fin_commitments`, `fin_card_next_due` y `trip_budget` |
 | `0014_hogares_finanzas.sql` | `couples.solo_finanzas` y `fin_crear_hogar()` para familiares que usan solo Finanzas |
 | `0015_spotify.sql` | `wedding_spotify`: refresh token de Spotify por pareja (solo servidor) |
+| `0016_gastos_proyectados.sql` | `fin_projection_living`: gasto del mes cargado a mano en el cash flow |
 
 Con la CLI de Supabase, contra el proyecto remoto:
 

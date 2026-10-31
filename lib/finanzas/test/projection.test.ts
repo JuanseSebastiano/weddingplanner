@@ -46,6 +46,12 @@ describe('buildProjection', () => {
     expect(p.months[MIN_HORIZON - 1].balance).toBe(500 + 400 * MIN_HORIZON);
   });
 
+  it('usa el gasto cargado a mano en ese mes y el promedio en el resto', () => {
+    const p = buildProjection({ ...base, commitments: [], living: { '2026-11': 1000 } });
+    expect(p.months[0]).toMatchObject({ month: '2026-10', living: 600, living_editado: false, balance: 900 });
+    expect(p.months[1]).toMatchObject({ month: '2026-11', living: 1000, living_editado: true, net: 0, balance: 900 });
+  });
+
   it('reparte los pagos por mes, lleva los vencidos al actual y extiende el horizonte', () => {
     const p = buildProjection({
       ...base,

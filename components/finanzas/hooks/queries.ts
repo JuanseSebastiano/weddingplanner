@@ -162,6 +162,16 @@ export function useProjection() {
   });
 }
 
+/** Gasto del mes a mano en el cash flow; null vuelve al promedio. */
+export function useSetProjectedLiving() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ month, living }: { month: string; living: number | null }) =>
+      api.patch<CashflowProjection>(`/cashflow/projection/${month}`, { living }),
+    onSuccess: (data) => queryClient.setQueryData(['cashflow', 'projection'], data),
+  });
+}
+
 export function useBills(month: string) {
   const user_id = usePersona();
   return useQuery({

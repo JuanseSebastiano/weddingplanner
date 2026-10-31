@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { formatCurrency, formatMonthLabel, type ProjectionMonth } from '@nf/shared';
-import { useMe, useProjection } from '../hooks/queries';
+import { useMe, useProjection, useSetProjectedLiving } from '../hooks/queries';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { CashflowTrend } from '../components/charts/CashflowTrend';
 
@@ -29,6 +30,58 @@ function Dato({ label, valor, nota }: { label: string; valor: number; nota?: str
       </span>
       {nota ? <span className="text-xs text-ink-faint">{nota}</span> : null}
     </div>
+  );
+}
+
+/**
+ * Gasto del mes editable: un clic lo abre, Enter o salir del campo guarda y
+ * vacío vuelve al promedio.
+ */
+function GastoEditable({ m }: { m: ProjectionMonth }) {
+  const setLiving = useSetProjectedLiving();
+  const [editando, setEditando] = useState(false);
+
+  if (editando) {
+    const guardar = (valor: string) => {
+      setEditando(false);
+      const limpio = valor.trim();
+      const living = limpio === '' ? null : Number(limpio);
+      if (living !== null && (Number.isNaN(living) || living < 0)) return;
+      if (living === m.living && m.living_editado) return;
+      setLiving.mutate({ month: m.month, living });
+    };
+    return (
+      <input
+        autoFocus
+        type="number"
+        inputMode="decimal"
+        min={0}
+        step="any"
+        defaultValue={m.living_editado ? m.living : ''}
+        placeholder={String(m.living)}
+        aria-label={`Gasto de ${formatMonthLabel(m.month)}`}
+        onBlur={(e) => guardar(e.currentTarget.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+          if (e.key === 'Escape') setEditando(false);
+        }}
+        className="tabular w-32 rounded-md border border-wash/[0.15] bg-sunken px-2 py-0.5 text-right text-[13px] text-ink-primary"
+      />
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setEditando(true)}
+      title={m.living_editado ? 'Cargado a mano. Vacío vuelve al promedio.' : 'Promedio. Tocá para editar.'}
+      disabled={setLiving.isPending}
+      className={`tabular border-b border-dashed text-right ${
+        m.living_editado ? 'border-accent font-semibold text-accent' : 'border-wash/[0.25] text-ink-primary'
+      }`}
+    >
+      {formatCurrency(m.living)}
+    </button>
   );
 }
 
@@ -91,7 +144,10 @@ export function ProyeccionPage() {
       />
 
       <div className="card flex flex-col gap-4 px-[22px] py-5">
-        <span className="eyebrow">MES A MES</span>
+        <div className="flex flex-col gap-1">
+          <span className="eyebrow">MES A MES</span>
+          <span className="text-xs text-ink-faint">Tocá un gasto del mes para cambiarlo; vacío vuelve al promedio.</span>
+        </div>
 
         <table className="hidden w-full border-collapse text-[13px] sm:table">
           <thead>
@@ -110,7 +166,7 @@ export function ProyeccionPage() {
                 <td className="py-2 text-ink-primary">{formatMonthLabel(m.month)}</td>
                 {columnas.map((c) => (
                   <td key={c.key} className={`tabular py-2 text-right ${colorDe(c.key, m[c.key] as number)}`}>
-                    {formatCurrency(m[c.key] as number)}
+                    {c.key === 'living' ? <GastoEditable m={m} /> : formatCurrency(m[c.key] as number)}
                   </td>
                 ))}
               </tr>
@@ -126,7 +182,7 @@ export function ProyeccionPage() {
                 <div key={c.key} className="flex items-baseline justify-between gap-3 text-[13px]">
                   <span className="text-ink-secondary">{c.label}</span>
                   <span className={`tabular ${colorDe(c.key, m[c.key] as number)}`}>
-                    {formatCurrency(m[c.key] as number)}
+                    {c.key === 'living' ? <GastoEditable m={m} /> : formatCurrency(m[c.key] as number)}
                   </span>
                 </div>
               ))}

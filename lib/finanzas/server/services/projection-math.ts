@@ -32,6 +32,8 @@ export interface ProjectionInput {
   /** Pesos por dólar para lo que no trae cotización propia. */
   rate: number | null;
   saldo_inicial: number;
+  /** Gasto del mes cargado a mano, por mes YYYY-MM. Reemplaza al promedio. */
+  living?: Record<string, number>;
 }
 
 export function buildProjection(input: ProjectionInput): CashflowProjection {
@@ -64,13 +66,15 @@ export function buildProjection(input: ProjectionInput): CashflowProjection {
   let balance = input.saldo_inicial;
   for (let m = month; m <= last; m = addMonths(m, 1)) {
     const pagos = porMes.get(m) ?? { boda: 0, viaje: 0 };
-    const expense = expenseAvg + pagos.boda + pagos.viaje;
+    const living = input.living?.[m] ?? expenseAvg;
+    const expense = living + pagos.boda + pagos.viaje;
     const net = incomeAvg - expense;
     balance += net;
     months.push({
       month: m,
       income: incomeAvg,
-      living: expenseAvg,
+      living: round2(living),
+      living_editado: input.living?.[m] !== undefined,
       boda: round2(pagos.boda),
       viaje: round2(pagos.viaje),
       expense: round2(expense),
