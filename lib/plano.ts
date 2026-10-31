@@ -3,7 +3,7 @@
  * cada elemento, medido desde la esquina superior izquierda.
  */
 
-export const CARPA = { ancho: 10, largo: 15 } as const;
+export const CARPA = { ancho: 16, largo: 16 } as const;
 /** Pasillo mínimo entre elementos para considerarlos separados. */
 export const MARGEN = 0.1;
 
