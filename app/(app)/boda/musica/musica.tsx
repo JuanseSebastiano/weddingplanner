@@ -49,8 +49,13 @@ export function Musica({
     if (c.preview_url) {
       setEmbed(null);
       a.src = c.preview_url;
-      void a.play();
       setSonando(c.id);
+      a.play().catch(() => {
+        // Si el navegador no puede reproducirlo, queda el reproductor de Spotify.
+        setSonando(null);
+        if (c.spotify_id) setEmbed(c.id);
+        else setMensaje(`No se pudo reproducir "${c.titulo}".`);
+      });
     } else if (c.spotify_id) {
       // Sin preview de iTunes: el reproductor de Spotify trae 30 s sin login.
       a.pause();
@@ -222,7 +227,7 @@ export function Musica({
                         title={`Spotify: ${c.titulo}`}
                         src={`https://open.spotify.com/embed/track/${c.spotify_id}`}
                         className="mt-2 h-20 w-full rounded-xl border-0"
-                        allow="encrypted-media"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                       />
                     )}
                   </li>

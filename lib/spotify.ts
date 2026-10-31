@@ -109,9 +109,14 @@ export async function temasDePlaylist(coupleId: string, id: string): Promise<Tem
   return temas;
 }
 
-/** Preview de 30 s de la iTunes Search API. null si no lo encuentra. */
+/**
+ * Preview de 30 s de la iTunes Search API. null si no lo encuentra. Busca
+ * con el título sin versión ("- Ao Vivo", "(Live)") y el primer artista.
+ */
 export async function previewItunes(titulo: string, artista: string | null): Promise<{ preview: string; portada: string | null } | null> {
-  const term = encodeURIComponent([titulo, artista].filter(Boolean).join(" "));
+  const limpio = titulo.replace(/\s+-\s+.*$/, "").replace(/\s*[([].*?[)\]]/g, "").trim() || titulo;
+  const primero = artista?.split(",")[0].trim() || null;
+  const term = encodeURIComponent([limpio, primero].filter(Boolean).join(" "));
   try {
     const res = await fetch(`https://itunes.apple.com/search?term=${term}&entity=song&limit=1`);
     if (!res.ok) return null;
