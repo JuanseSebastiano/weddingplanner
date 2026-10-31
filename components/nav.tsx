@@ -43,7 +43,8 @@ const SECCIONES_FINANZAS = [
   { href: "/finanzas/balance", label: "Ingresos y egresos" },
   { href: "/finanzas/cashflow", label: "Cash flow" },
   { href: "/finanzas/ahorros", label: "Ahorros" },
-  { href: "/finanzas/presupuesto", label: "Presupuesto" },
+  { href: "/finanzas/presupuesto-mensual", label: "Presupuesto mensual" },
+  { href: "/finanzas/presupuesto", label: "Boda y viaje" },
   { href: "/finanzas/revision", label: "Revisión" },
   { href: "/finanzas/configuracion", label: "Configuración" },
 ];

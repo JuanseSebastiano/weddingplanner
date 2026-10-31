@@ -46,6 +46,7 @@ routers quedaron casi textuales.
 | `/finanzas/gastos` | Gastos con filtros, alta y edición |
 | `/finanzas/balance` | Ingresos y egresos del mes y listado unificado |
 | `/finanzas/ahorros` | Caja de ahorro y cartera |
+| `/finanzas/presupuesto-mensual` | Tope del mes y topes por rubro que no pueden sumar más; lo que un rubro se pasa se recorta de los variables |
 | `/finanzas/revision` | Gastos detectados en mails: nada se imputa sin confirmarlo acá |
 | `/finanzas/configuracion` | Gmail, rubros, presupuestos, reglas, cuentas (saldo, cierre y vencimiento) |
 
@@ -156,6 +157,7 @@ Están versionadas en `supabase/migrations/` y se aplican en orden:
 | `0014_hogares_finanzas.sql` | `couples.solo_finanzas` y `fin_crear_hogar()` para familiares que usan solo Finanzas |
 | `0015_spotify.sql` | `wedding_spotify`: refresh token de Spotify por pareja (solo servidor) |
 | `0016_gastos_proyectados.sql` | `fin_projection_living`: gasto del mes cargado a mano en el cash flow |
+| `0017_presupuesto_mensual.sql` | Tope mensual (`couples.fin_tope_mensual`) y rubros variables (`fin_categories.variable`) |
 
 Con la CLI de Supabase, contra el proyecto remoto:
 

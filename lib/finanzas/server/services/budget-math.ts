@@ -1,6 +1,8 @@
 import {
   BUDGET_WARN_RATIO,
   type BudgetState,
+  type MonthlyPlan,
+  type MonthlyPlanRubro,
   type BudgetStatus,
   type BudgetWithCategory,
 } from '@nf/shared';
@@ -96,4 +98,56 @@ export function buildBudgetStatuses(
       };
     })
     .sort((a, b) => b.pct - a.pct);
+}
+
+export type PlanRubroInput = Omit<MonthlyPlanRubro, 'cut' | 'adjusted' | 'remaining' | 'state'>;
+
+/**
+ * Presupuesto mensual del hogar. Lo que cada rubro gasta por encima de su
+ * tope (o todo lo de un rubro sin tope) es exceso, y se descuenta de los
+ * rubros variables en proporción a su tope, sin pasar de lo que les queda
+ * disponible. Lo que no entra queda como `uncovered`.
+ */
+export function buildMonthlyPlan(month: string, cap: number | null, rubros: PlanRubroInput[]): MonthlyPlan {
+  const excess = rubros.reduce((acc, r) => acc + Math.max(0, r.spent - r.amount), 0);
+  const cut = new Map<PlanRubroInput, number>();
+  let pendiente = excess;
+
+  // Reparto proporcional; si un variable se queda sin disponible, lo que no
+  // le entra se reparte entre los que todavía tienen.
+  for (let vuelta = 0; vuelta < rubros.length && pendiente > 0.005; vuelta += 1) {
+    const conLugar = rubros.filter((r) => r.variable && r.amount - r.spent - (cut.get(r) ?? 0) > 0.005);
+    const base = conLugar.reduce((acc, r) => acc + r.amount, 0);
+    if (base <= 0) break;
+    let repartido = 0;
+    for (const r of conLugar) {
+      const disponible = r.amount - r.spent - (cut.get(r) ?? 0);
+      const parte = Math.min(disponible, (pendiente * r.amount) / base);
+      cut.set(r, (cut.get(r) ?? 0) + parte);
+      repartido += parte;
+    }
+    pendiente -= repartido;
+  }
+
+  const assigned = rubros.reduce((acc, r) => acc + r.amount, 0);
+  return {
+    month,
+    cap,
+    assigned: round2(assigned),
+    unassigned: cap === null ? null : round2(cap - assigned),
+    spent: round2(rubros.reduce((acc, r) => acc + r.spent, 0)),
+    excess: round2(excess),
+    uncovered: round2(Math.max(0, pendiente)),
+    rubros: rubros.map((r) => {
+      const recorte = round2(cut.get(r) ?? 0);
+      const adjusted = round2(r.amount - recorte);
+      return {
+        ...r,
+        cut: recorte,
+        adjusted,
+        remaining: round2(adjusted - r.spent),
+        state: budgetState(r.spent, adjusted),
+      };
+    }),
+  };
 }

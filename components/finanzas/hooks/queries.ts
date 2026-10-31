@@ -7,6 +7,7 @@ import type {
   BudgetInput,
   BudgetWithCategory,
   CashflowProjection,
+  MonthlyPlan,
   CashflowSummary,
   CategorizationRule,
   Category,
@@ -404,6 +405,7 @@ export function useDeleteCategory() {
 /** El tope vive en el dashboard: cambiarlo mueve el aviso de esa pantalla. */
 function invalidateBudgetViews(queryClient: ReturnType<typeof useQueryClient>): void {
   void queryClient.invalidateQueries({ queryKey: ['budgets'] });
+  void queryClient.invalidateQueries({ queryKey: ['budget-plan'] });
   void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
 }
 
@@ -436,6 +438,28 @@ export function useDeleteSavingsMovement() {
   return useMutation({
     mutationFn: (id: string) => api.delete<void>(`/savings/${id}`),
     onSuccess: () => invalidateSavingsViews(queryClient),
+  });
+}
+
+export function useMonthlyPlan() {
+  return useQuery({ queryKey: ['budget-plan'], queryFn: () => api.get<MonthlyPlan>('/budgets/plan') });
+}
+
+/** Tope mensual total; null lo saca. */
+export function useSetMonthlyCap() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (amount: number | null) => api.patch<MonthlyPlan>('/budgets/cap', { amount }),
+    onSuccess: (data) => queryClient.setQueryData(['budget-plan'], data),
+  });
+}
+
+export function useSetCategoryVariable() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ categoryId, variable }: { categoryId: string; variable: boolean }) =>
+      api.patch<MonthlyPlan>(`/budgets/variable/${categoryId}`, { variable }),
+    onSuccess: (data) => queryClient.setQueryData(['budget-plan'], data),
   });
 }
 

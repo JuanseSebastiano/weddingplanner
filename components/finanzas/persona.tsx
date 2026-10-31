@@ -43,8 +43,8 @@ export function PersonaSelector() {
   const me = useMe();
   const pathname = usePathname();
   const members = me.data?.members ?? [];
-  // Presupuesto es de la pareja: el selector no cambia nada ahí.
-  if (members.length < 2 || pathname === '/finanzas/presupuesto') return null;
+  // Los presupuestos son de la pareja: el selector no cambia nada ahí.
+  if (members.length < 2 || pathname === '/finanzas/presupuesto' || pathname === '/finanzas/presupuesto-mensual') return null;
 
   const opciones = [{ id: '', display_name: 'Todos' }, ...members];
   return (

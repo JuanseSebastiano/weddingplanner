@@ -3,7 +3,8 @@ import { z } from 'zod';
 import { supabaseAdmin } from '../lib/supabase';
 import { asyncHandler, badRequest, conflict, notFound } from '../lib/errors';
 import type { AuthedRequest } from '../middleware/auth';
-import { BUDGET_SELECT, getBudget, listBudgets } from '../services/budgets';
+import { currentMonth } from '@nf/shared';
+import { assertWithinCap, BUDGET_SELECT, getBudget, getMonthlyPlan, listBudgets } from '../services/budgets';
 
 const budgetInputSchema = z.object({
   category_id: z.string().uuid('Elegí un rubro'),
@@ -34,6 +35,51 @@ async function assertExpenseCategory(coupleId: string, categoryId: string): Prom
 
 export const budgetsRouter = Router();
 
+/** Presupuesto mensual del mes (por defecto el actual). */
+budgetsRouter.get(
+  '/plan',
+  asyncHandler<AuthedRequest>(async (req, res) => {
+    const month = z.string().regex(/^\d{4}-\d{2}$/).optional().safeParse(req.query.month);
+    if (!month.success) throw badRequest('Mes inválido');
+    res.json(await getMonthlyPlan(req.auth.coupleId, month.data ?? currentMonth()));
+  }),
+);
+
+/** Tope mensual total; null lo saca. */
+budgetsRouter.patch(
+  '/cap',
+  asyncHandler<AuthedRequest>(async (req, res) => {
+    const parsed = z.object({ amount: z.number().positive().nullable() }).safeParse(req.body);
+    if (!parsed.success) throw badRequest('Tope inválido', parsed.error.flatten());
+    if (parsed.data.amount !== null) await assertWithinCap(req.auth.coupleId, { cap: parsed.data.amount });
+
+    const { error } = await supabaseAdmin
+      .from('couples')
+      .update({ fin_tope_mensual: parsed.data.amount })
+      .eq('id', req.auth.coupleId);
+    if (error) throw error;
+    res.json(await getMonthlyPlan(req.auth.coupleId, currentMonth()));
+  }),
+);
+
+/** Marca un rubro como variable (absorbe los excesos) o fijo. */
+budgetsRouter.patch(
+  '/variable/:categoryId',
+  asyncHandler<AuthedRequest>(async (req, res) => {
+    const parsed = z.object({ variable: z.boolean() }).safeParse(req.body);
+    if (!parsed.success) throw badRequest('Valor inválido');
+    await assertExpenseCategory(req.auth.coupleId, req.params.categoryId as string);
+
+    const { error } = await supabaseAdmin
+      .from('fin_categories')
+      .update({ variable: parsed.data.variable })
+      .eq('id', req.params.categoryId as string)
+      .eq('couple_id', req.auth.coupleId);
+    if (error) throw error;
+    res.json(await getMonthlyPlan(req.auth.coupleId, currentMonth()));
+  }),
+);
+
 budgetsRouter.get(
   '/',
   asyncHandler<AuthedRequest>(async (req, res) => {
@@ -48,6 +94,7 @@ budgetsRouter.post(
     if (!parsed.success) throw badRequest('Tope inválido', parsed.error.flatten());
 
     await assertExpenseCategory(req.auth.coupleId, parsed.data.category_id);
+    await assertWithinCap(req.auth.coupleId, { categoryId: parsed.data.category_id, amount: parsed.data.amount });
 
     const { data, error } = await supabaseAdmin
       .from('fin_budgets')
@@ -80,7 +127,9 @@ budgetsRouter.patch(
     if (!parsed.success) throw badRequest('Tope inválido', parsed.error.flatten());
 
     const id = req.params.id as string;
-    if (!(await getBudget(req.auth.coupleId, id))) throw notFound('Tope no encontrado');
+    const budget = await getBudget(req.auth.coupleId, id);
+    if (!budget) throw notFound('Tope no encontrado');
+    await assertWithinCap(req.auth.coupleId, { categoryId: budget.category_id, amount: parsed.data.amount });
 
     const { data, error } = await supabaseAdmin
       .from('fin_budgets')

@@ -360,6 +360,45 @@ export interface BudgetInput {
   amount: number;
 }
 
+/** Un rubro de egreso dentro del presupuesto mensual. */
+export interface MonthlyPlanRubro {
+  /** null = gastos sin rubro. */
+  category_id: string | null;
+  name: string;
+  color: string;
+  /** Los variables absorben lo que se pasan los demás. */
+  variable: boolean;
+  /** null si el rubro no tiene tope cargado. */
+  budget_id: string | null;
+  /** Tope cargado (0 si no tiene). */
+  amount: number;
+  /** Gastado en el mes, solo gastos confirmados. */
+  spent: number;
+  /** Lo que se le descontó por excesos de otros rubros (solo variables). */
+  cut: number;
+  /** amount − cut. */
+  adjusted: number;
+  /** adjusted − spent. Negativo si se pasó. */
+  remaining: number;
+  state: BudgetState;
+}
+
+export interface MonthlyPlan {
+  month: string;
+  /** Tope mensual total; null si no se cargó. */
+  cap: number | null;
+  /** Suma de los topes por rubro. */
+  assigned: number;
+  /** cap − assigned; null sin tope. */
+  unassigned: number | null;
+  spent: number;
+  /** Lo que los rubros gastaron por encima de su tope (incluye rubros sin tope). */
+  excess: number;
+  /** Exceso que ya no entra en los variables. */
+  uncovered: number;
+  rubros: MonthlyPlanRubro[];
+}
+
 /** Un tope ya comparado contra lo gastado en un mes concreto. */
 export interface BudgetStatus {
   budget_id: string;

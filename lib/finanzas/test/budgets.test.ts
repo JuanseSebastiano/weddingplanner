@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { BudgetWithCategory } from '@nf/shared';
 import {
   buildBudgetStatuses,
+  buildMonthlyPlan,
   budgetPct,
   budgetState,
   describeBudget,
@@ -153,5 +154,47 @@ describe('buildBudgetStatuses', () => {
 
   it('devuelve vacío sin topes configurados', () => {
     expect(buildBudgetStatuses([], new Map([['c1', 10000]]))).toEqual([]);
+  });
+});
+
+describe('buildMonthlyPlan', () => {
+  const rubro = (name: string, amount: number, spent: number, variable = false) => ({
+    category_id: name,
+    name,
+    color: '#000',
+    variable,
+    budget_id: amount > 0 ? name : null,
+    amount,
+    spent,
+  });
+
+  it('sin excesos no recorta nada', () => {
+    const p = buildMonthlyPlan('2026-10', 1000, [rubro('Servicios', 300, 200), rubro('Salidas', 200, 50, true)]);
+    expect(p).toMatchObject({ assigned: 500, unassigned: 500, spent: 250, excess: 0, uncovered: 0 });
+    expect(p.rubros[1]).toMatchObject({ cut: 0, adjusted: 200, remaining: 150 });
+  });
+
+  it('descuenta el exceso de los variables en proporción a su tope', () => {
+    const p = buildMonthlyPlan('2026-10', 1000, [
+      rubro('Servicios', 300, 450),
+      rubro('Salidas', 200, 0, true),
+      rubro('Hogar', 100, 0, true),
+    ]);
+    expect(p.excess).toBe(150);
+    expect(p.rubros[1]).toMatchObject({ cut: 100, adjusted: 100 });
+    expect(p.rubros[2]).toMatchObject({ cut: 50, adjusted: 50 });
+    expect(p.uncovered).toBe(0);
+  });
+
+  it('cuenta como exceso lo de rubros sin tope y no le saca a un variable más de lo que le queda', () => {
+    const p = buildMonthlyPlan('2026-10', null, [
+      rubro('Shopping', 0, 120),
+      rubro('Salidas', 100, 90, true),
+      rubro('Hogar', 100, 0, true),
+    ]);
+    expect(p.unassigned).toBeNull();
+    expect(p.rubros[1]).toMatchObject({ cut: 10, adjusted: 90, remaining: 0 });
+    expect(p.rubros[2]).toMatchObject({ cut: 100, adjusted: 0 });
+    expect(p.uncovered).toBe(10);
   });
 });
