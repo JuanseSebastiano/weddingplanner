@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Nosotros — boda, finanzas y viaje",
-    short_name: "Nosotros",
-    description: "Boda, finanzas y viaje en un solo lugar",
+    name: "Nuestras Finanzas",
+    short_name: "Finanzas",
+    description: "Nuestras Finanzas",
     lang: "es",
     start_url: "/",
     display: "standalone",

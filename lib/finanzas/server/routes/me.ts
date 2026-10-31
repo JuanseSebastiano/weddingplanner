@@ -14,7 +14,7 @@ meRouter.get(
   '/',
   asyncHandler<AuthedRequest>(async (req, res) => {
     const [householdRes, membersRes, gmailRes, tokenRes] = await Promise.all([
-      supabaseAdmin.from('couples').select('id, name:nombre').eq('id', req.auth.coupleId).maybeSingle(),
+      supabaseAdmin.from('couples').select('id, name:nombre, solo_finanzas').eq('id', req.auth.coupleId).maybeSingle(),
       supabaseAdmin
         .from('couple_members')
         .select('id:user_id, display_name:nombre')

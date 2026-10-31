@@ -1,5 +1,5 @@
 import { formatCurrency, formatMonthLabel, type ProjectionMonth } from '@nf/shared';
-import { useProjection } from '../hooks/queries';
+import { useMe, useProjection } from '../hooks/queries';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { CashflowTrend } from '../components/charts/CashflowTrend';
 
@@ -40,7 +40,12 @@ function Dato({ label, valor, nota }: { label: string; valor: number; nota?: str
 export function ProyeccionPage() {
   const { compact } = useBreakpoint();
   const { data, isLoading } = useProjection();
+  const me = useMe();
   if (isLoading || !data) return null;
+
+  // Los hogares solo-Finanzas no tienen boda ni viaje.
+  const soloFinanzas = me.data?.household?.solo_finanzas ?? false;
+  const columnas = soloFinanzas ? COLUMNAS.filter((c) => c.key !== 'boda' && c.key !== 'viaje') : COLUMNAS;
 
   const { months, sin_fecha } = data;
   const final = months[months.length - 1]?.balance ?? data.saldo_inicial;
@@ -92,7 +97,7 @@ export function ProyeccionPage() {
           <thead>
             <tr className="text-left text-xs text-ink-secondary">
               <th className="pb-2 font-normal">Mes</th>
-              {COLUMNAS.map((c) => (
+              {columnas.map((c) => (
                 <th key={c.key} className="pb-2 text-right font-normal">
                   {c.label}
                 </th>
@@ -103,7 +108,7 @@ export function ProyeccionPage() {
             {months.map((m) => (
               <tr key={m.month} className="border-t border-wash/[0.08]">
                 <td className="py-2 text-ink-primary">{formatMonthLabel(m.month)}</td>
-                {COLUMNAS.map((c) => (
+                {columnas.map((c) => (
                   <td key={c.key} className={`tabular py-2 text-right ${colorDe(c.key, m[c.key] as number)}`}>
                     {formatCurrency(m[c.key] as number)}
                   </td>
@@ -117,7 +122,7 @@ export function ProyeccionPage() {
           {months.map((m) => (
             <li key={m.month} className="flex flex-col gap-1.5 border-t border-wash/[0.08] pt-3 first:border-0 first:pt-0">
               <span className="text-xs font-semibold text-ink-secondary">{formatMonthLabel(m.month)}</span>
-              {COLUMNAS.map((c) => (
+              {columnas.map((c) => (
                 <div key={c.key} className="flex items-baseline justify-between gap-3 text-[13px]">
                   <span className="text-ink-secondary">{c.label}</span>
                   <span className={`tabular ${colorDe(c.key, m[c.key] as number)}`}>
@@ -129,7 +134,7 @@ export function ProyeccionPage() {
           ))}
         </ul>
 
-        {sinFecha > 0 && (
+        {!soloFinanzas && sinFecha > 0 && (
           <span className="text-xs text-ink-faint">
             Sin fecha y fuera del saldo: boda {formatCurrency(sin_fecha.boda)} · luna de miel{' '}
             {formatCurrency(sin_fecha.viaje)}

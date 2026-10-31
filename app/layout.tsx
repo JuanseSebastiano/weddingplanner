@@ -17,8 +17,8 @@ const serif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Nosotros",
-  description: "Boda, finanzas y viaje",
+  title: "Nuestras Finanzas",
+  description: "Nuestras Finanzas",
 };
 
 export const viewport: Viewport = {

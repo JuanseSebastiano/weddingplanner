@@ -33,7 +33,7 @@ import { usePersona } from '../persona';
 
 export interface MeResponse {
   user: { id: string; email: string | null; display_name: string };
-  household: { id: string; name: string } | null;
+  household: { id: string; name: string; solo_finanzas: boolean } | null;
   members: Array<{ id: string; display_name: string }>;
   gmail: {
     available: boolean;

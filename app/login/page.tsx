@@ -36,9 +36,9 @@ export default function LoginPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-sm flex-col justify-center px-5">
-      <h1 className="font-serif text-4xl font-normal leading-tight">Nosotros</h1>
+      <h1 className="font-serif text-4xl font-normal leading-tight">Nuestras Finanzas</h1>
       <p className="mt-2 mb-8 text-muted-foreground">
-        Boda, finanzas y viaje en un solo lugar.
+        Ingresá con tu email y contraseña.
       </p>
 
       <form onSubmit={entrar} className="space-y-3">
