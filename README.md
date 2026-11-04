@@ -57,7 +57,9 @@ al cierre anterior si todavía no.
 
 **Gmail**: el cron diario (`vercel.json`) llama a `/api/fin/gmail/cron` con
 `Authorization: Bearer $CRON_SECRET`. Cada mail reconocido entra como gasto
-`pending` y recién suma cuando alguien lo confirma en Revisión.
+`pending` y recién suma cuando alguien lo confirma en Revisión. Los resúmenes
+de tarjeta no son compras: se guardan sus totales en pesos y dólares,
+vencimiento y pago mínimo (`fin_card_statements`) y se muestran en el resumen.
 
 ```bash
 npm test   # tests de parsers, reglas, balance, presupuestos y cartera
@@ -158,6 +160,7 @@ Están versionadas en `supabase/migrations/` y se aplican en orden:
 | `0015_spotify.sql` | `wedding_spotify`: refresh token de Spotify por pareja (solo servidor) |
 | `0016_gastos_proyectados.sql` | `fin_projection_living`: gasto del mes cargado a mano en el cash flow |
 | `0017_presupuesto_mensual.sql` | Tope mensual (`couples.fin_tope_mensual`) y rubros variables (`fin_categories.variable`) |
+| `0018_presupuesto_por_persona_y_resumenes.sql` | Tope y topes por rubro por persona (`couple_members.fin_tope_mensual`, `fin_budgets.user_id`) y `fin_card_statements` |
 
 Con la CLI de Supabase, contra el proyecto remoto:
 

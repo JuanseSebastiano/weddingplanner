@@ -3,6 +3,7 @@ import { formatCurrency, formatMonthLabel, parseAmount, type MonthlyPlanRubro } 
 import {
   useCreateBudget,
   useDeleteBudget,
+  useMe,
   useMonthlyPlan,
   useSetCategoryVariable,
   useSetMonthlyCap,
@@ -68,7 +69,16 @@ function Monto({
   );
 }
 
-function Rubro({ r, onError }: { r: MonthlyPlanRubro; onError: (m: string | null) => void }) {
+function Rubro({
+  r,
+  userId,
+  onError,
+}: {
+  r: MonthlyPlanRubro;
+  /** null = vista de los dos: solo lectura. */
+  userId: string | null;
+  onError: (m: string | null) => void;
+}) {
   const crear = useCreateBudget();
   const actualizar = useUpdateBudget();
   const borrar = useDeleteBudget();
@@ -81,8 +91,8 @@ function Rubro({ r, onError }: { r: MonthlyPlanRubro; onError: (m: string | null
         if (r.budget_id) await borrar.mutateAsync(r.budget_id);
       } else if (r.budget_id) {
         await actualizar.mutateAsync({ id: r.budget_id, amount: monto });
-      } else if (r.category_id) {
-        await crear.mutateAsync({ category_id: r.category_id, amount: monto });
+      } else if (r.category_id && userId) {
+        await crear.mutateAsync({ category_id: r.category_id, amount: monto, user_id: userId });
       }
     } catch (err) {
       onError(err instanceof Error ? err.message : 'No pudimos guardar el tope');
@@ -107,8 +117,12 @@ function Rubro({ r, onError }: { r: MonthlyPlanRubro; onError: (m: string | null
             {r.variable ? 'Variable' : 'Fijo'}
           </button>
         )}
-        {r.category_id ? (
+        {r.category_id && userId ? (
           <Monto valor={r.amount || null} etiqueta={`Tope de ${r.name}`} onGuardar={guardarTope} />
+        ) : r.category_id ? (
+          <span className="tabular w-[130px] text-right text-[13px] text-ink-primary">
+            {r.amount ? formatCurrency(r.amount) : 'Sin tope'}
+          </span>
         ) : (
           <span className="w-[130px] text-right text-xs text-ink-faint">Asigná un rubro</span>
         )}
@@ -137,17 +151,25 @@ function Rubro({ r, onError }: { r: MonthlyPlanRubro; onError: (m: string | null
  * sumar más. Lo que un rubro se pasa se recorta de los variables.
  */
 export function PresupuestoMensualPage() {
-  const { data, isLoading } = useMonthlyPlan();
+  const me = useMe();
+  // undefined = todavía no eligió: arranca en el propio.
+  const [elegido, setElegido] = useState<string | null | undefined>(undefined);
+  const userId = elegido === undefined ? (me.data?.user.id ?? null) : elegido;
+  const { data, isLoading } = useMonthlyPlan(userId);
   const setCap = useSetMonthlyCap();
   const [error, setError] = useState<string | null>(null);
-  if (isLoading || !data) return null;
+  if (isLoading || !data || !me.data) return null;
+
+  const members = me.data.members;
+  const opciones = members.length > 1 ? [...members, { id: null, display_name: 'Juntos' }] : members;
 
   const estadoTotal = data.cap === null ? 'ok' : data.spent > data.cap ? 'exceeded' : data.spent >= data.cap * 0.8 ? 'warning' : 'ok';
 
   async function guardarTope(monto: number | null) {
+    if (!userId) return;
     setError(null);
     try {
-      await setCap.mutateAsync(monto);
+      await setCap.mutateAsync({ amount: monto, user_id: userId });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No pudimos guardar el tope');
     }
@@ -160,13 +182,44 @@ export function PresupuestoMensualPage() {
         <h1 className="m-0 font-serif text-2xl font-normal lg:text-[28px]">Presupuesto mensual</h1>
       </div>
 
+      {opciones.length > 1 && (
+        <div role="group" aria-label="Presupuesto de" className="inline-flex self-start rounded-full border border-wash/[0.08] bg-sunken p-0.5">
+          {opciones.map((o) => (
+            <button
+              key={o.id ?? 'juntos'}
+              type="button"
+              aria-pressed={userId === o.id}
+              onClick={() => {
+                setError(null);
+                setElegido(o.id);
+              }}
+              className={`rounded-full px-3.5 py-1.5 text-xs transition-colors ${
+                userId === o.id ? 'bg-accent text-accent-on' : 'text-ink-secondary'
+              }`}
+            >
+              {o.display_name}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="card flex flex-col gap-4 px-[22px] py-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-col gap-0.5">
             <span className="eyebrow">TOPE DEL MES</span>
-            <span className="text-xs text-ink-faint">Los rubros no pueden sumar más que esto.</span>
+            <span className="text-xs text-ink-faint">
+              {userId
+                ? 'Los rubros no pueden sumar más que esto. Cuenta lo que cargó esta persona.'
+                : 'La suma de los presupuestos de cada uno. Se edita en la pestaña de cada persona.'}
+            </span>
           </div>
-          <Monto valor={data.cap} etiqueta="Tope mensual" onGuardar={guardarTope} />
+          {userId ? (
+            <Monto valor={data.cap} etiqueta="Tope mensual" onGuardar={guardarTope} />
+          ) : (
+            <span className="tabular text-[15px] font-semibold text-ink-primary">
+              {data.cap === null ? 'Sin tope' : formatCurrency(data.cap)}
+            </span>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-4 border-t border-wash/[0.08] pt-4 sm:grid-cols-4">
           <Dato label="Asignado a rubros" valor={formatCurrency(data.assigned)} />
@@ -205,7 +258,7 @@ export function PresupuestoMensualPage() {
         </div>
         <ul className="m-0 flex list-none flex-col p-0">
           {data.rubros.map((r) => (
-            <Rubro key={r.category_id ?? 'sin-rubro'} r={r} onError={setError} />
+            <Rubro key={`${userId}-${r.category_id ?? 'sin-rubro'}`} r={r} userId={userId} onError={setError} />
           ))}
         </ul>
       </div>

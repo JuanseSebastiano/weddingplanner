@@ -18,6 +18,7 @@ import { CategoryDonut } from '../components/charts/CategoryDonut';
 import { UserSplit } from '../components/charts/UserSplit';
 import { MonthlyTrend } from '../components/charts/MonthlyTrend';
 import { BudgetAlert, BudgetsCard } from '../components/BudgetsCard';
+import { StatementsCard } from '../components/StatementsCard';
 import { CategoryExpensesFlyout } from '../components/CategoryExpensesFlyout';
 import { EmptyState, ErrorState, Skeleton } from '../components/States';
 
@@ -271,6 +272,7 @@ export function DashboardPage() {
 
       {/* Lo que viene (disponible y compromisos) va al final: arriba manda el mes. */}
       <BillsCard />
+      <StatementsCard />
       <AvailableCard />
       <CommitmentsCard />
 

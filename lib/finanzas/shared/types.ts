@@ -346,6 +346,8 @@ export interface Budget {
   couple_id: string;
   category_id: string;
   amount: number;
+  /** De quién es el tope: cada integrante arma su presupuesto. */
+  user_id: string;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -358,6 +360,8 @@ export interface BudgetWithCategory extends Budget {
 export interface BudgetInput {
   category_id: string;
   amount: number;
+  /** Por defecto, quien hace el pedido. */
+  user_id?: string;
 }
 
 /** Un rubro de egreso dentro del presupuesto mensual. */
@@ -760,4 +764,23 @@ export interface PortfolioSummary {
    * dejar el número en null solo porque la fuente externa falló.
    */
   total_savings: number;
+}
+
+/** Último resumen de una tarjeta, leído del mail del banco. */
+export interface CardStatementSummary {
+  id: string;
+  user_id: string;
+  card: string;
+  due_date: string | null;
+  total_ars: number | null;
+  total_usd: number | null;
+  min_payment: number | null;
+  received_at: string | null;
+  owner: { display_name: string } | null;
+}
+
+export interface CardStatementsResponse {
+  statements: CardStatementSummary[];
+  total_ars: number;
+  total_usd: number;
 }

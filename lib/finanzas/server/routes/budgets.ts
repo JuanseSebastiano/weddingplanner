@@ -9,7 +9,20 @@ import { assertWithinCap, BUDGET_SELECT, getBudget, getMonthlyPlan, listBudgets 
 const budgetInputSchema = z.object({
   category_id: z.string().uuid('Elegí un rubro'),
   amount: z.number().positive('El tope debe ser mayor a cero'),
+  user_id: z.string().uuid().optional(),
 });
+
+/** El presupuesto de un integrante de la pareja: cada uno arma el suyo y el otro lo puede ver o editar. */
+async function assertMember(coupleId: string, userId: string): Promise<void> {
+  const { data, error } = await supabaseAdmin
+    .from('couple_members')
+    .select('user_id')
+    .eq('couple_id', coupleId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) throw notFound('Integrante no encontrado');
+}
 
 /**
  * Confirma que el rubro exista, sea del hogar y sea de egreso.
@@ -35,30 +48,37 @@ async function assertExpenseCategory(coupleId: string, categoryId: string): Prom
 
 export const budgetsRouter = Router();
 
-/** Presupuesto mensual del mes (por defecto el actual). */
+/** Presupuesto mensual del mes (por defecto el actual), de una persona o, sin user_id, de los dos. */
 budgetsRouter.get(
   '/plan',
   asyncHandler<AuthedRequest>(async (req, res) => {
     const month = z.string().regex(/^\d{4}-\d{2}$/).optional().safeParse(req.query.month);
-    if (!month.success) throw badRequest('Mes inválido');
-    res.json(await getMonthlyPlan(req.auth.coupleId, month.data ?? currentMonth()));
+    const userId = z.string().uuid().optional().safeParse(req.query.user_id);
+    if (!month.success || !userId.success) throw badRequest('Filtros inválidos');
+    if (userId.data) await assertMember(req.auth.coupleId, userId.data);
+    res.json(await getMonthlyPlan(req.auth.coupleId, month.data ?? currentMonth(), userId.data ?? null));
   }),
 );
 
-/** Tope mensual total; null lo saca. */
+/** Tope mensual de una persona (por defecto quien pide); null lo saca. */
 budgetsRouter.patch(
   '/cap',
   asyncHandler<AuthedRequest>(async (req, res) => {
-    const parsed = z.object({ amount: z.number().positive().nullable() }).safeParse(req.body);
+    const parsed = z
+      .object({ amount: z.number().positive().nullable(), user_id: z.string().uuid().optional() })
+      .safeParse(req.body);
     if (!parsed.success) throw badRequest('Tope inválido', parsed.error.flatten());
-    if (parsed.data.amount !== null) await assertWithinCap(req.auth.coupleId, { cap: parsed.data.amount });
+    const userId = parsed.data.user_id ?? req.auth.userId;
+    await assertMember(req.auth.coupleId, userId);
+    if (parsed.data.amount !== null) await assertWithinCap(req.auth.coupleId, userId, { cap: parsed.data.amount });
 
     const { error } = await supabaseAdmin
-      .from('couples')
+      .from('couple_members')
       .update({ fin_tope_mensual: parsed.data.amount })
-      .eq('id', req.auth.coupleId);
+      .eq('couple_id', req.auth.coupleId)
+      .eq('user_id', userId);
     if (error) throw error;
-    res.json(await getMonthlyPlan(req.auth.coupleId, currentMonth()));
+    res.json(await getMonthlyPlan(req.auth.coupleId, currentMonth(), userId));
   }),
 );
 
@@ -76,14 +96,14 @@ budgetsRouter.patch(
       .eq('id', req.params.categoryId as string)
       .eq('couple_id', req.auth.coupleId);
     if (error) throw error;
-    res.json(await getMonthlyPlan(req.auth.coupleId, currentMonth()));
+    res.status(204).end();
   }),
 );
 
 budgetsRouter.get(
   '/',
   asyncHandler<AuthedRequest>(async (req, res) => {
-    res.json(await listBudgets(req.auth.coupleId));
+    res.json(await listBudgets(req.auth.coupleId, req.auth.userId));
   }),
 );
 
@@ -94,7 +114,9 @@ budgetsRouter.post(
     if (!parsed.success) throw badRequest('Tope inválido', parsed.error.flatten());
 
     await assertExpenseCategory(req.auth.coupleId, parsed.data.category_id);
-    await assertWithinCap(req.auth.coupleId, { categoryId: parsed.data.category_id, amount: parsed.data.amount });
+    const userId = parsed.data.user_id ?? req.auth.userId;
+    await assertMember(req.auth.coupleId, userId);
+    await assertWithinCap(req.auth.coupleId, userId, { categoryId: parsed.data.category_id, amount: parsed.data.amount });
 
     const { data, error } = await supabaseAdmin
       .from('fin_budgets')
@@ -102,6 +124,7 @@ budgetsRouter.post(
         couple_id: req.auth.coupleId,
         category_id: parsed.data.category_id,
         amount: parsed.data.amount,
+        user_id: userId,
         created_by: req.auth.userId,
       })
       .select(BUDGET_SELECT)
@@ -129,7 +152,7 @@ budgetsRouter.patch(
     const id = req.params.id as string;
     const budget = await getBudget(req.auth.coupleId, id);
     if (!budget) throw notFound('Tope no encontrado');
-    await assertWithinCap(req.auth.coupleId, { categoryId: budget.category_id, amount: parsed.data.amount });
+    await assertWithinCap(req.auth.coupleId, budget.user_id, { categoryId: budget.category_id, amount: parsed.data.amount });
 
     const { data, error } = await supabaseAdmin
       .from('fin_budgets')

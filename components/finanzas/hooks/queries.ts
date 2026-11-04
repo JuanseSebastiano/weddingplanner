@@ -6,6 +6,7 @@ import type {
   BillOfMonth,
   BudgetInput,
   BudgetWithCategory,
+  CardStatementsResponse,
   CashflowProjection,
   MonthlyPlan,
   CashflowSummary,
@@ -441,16 +442,30 @@ export function useDeleteSavingsMovement() {
   });
 }
 
-export function useMonthlyPlan() {
-  return useQuery({ queryKey: ['budget-plan'], queryFn: () => api.get<MonthlyPlan>('/budgets/plan') });
+/** Últimos resúmenes de tarjeta, según la persona elegida. */
+export function useCardStatements() {
+  const user_id = usePersona();
+  return useQuery({
+    queryKey: ['statements', user_id],
+    queryFn: () => api.get<CardStatementsResponse>(`/statements${toQueryString({ user_id })}`),
+  });
 }
 
-/** Tope mensual total; null lo saca. */
+/** Presupuesto mensual de una persona, o de los dos con null. */
+export function useMonthlyPlan(userId: string | null) {
+  return useQuery({
+    queryKey: ['budget-plan', userId],
+    queryFn: () => api.get<MonthlyPlan>(`/budgets/plan${toQueryString({ user_id: userId ?? undefined })}`),
+  });
+}
+
+/** Tope mensual de una persona; null lo saca. */
 export function useSetMonthlyCap() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (amount: number | null) => api.patch<MonthlyPlan>('/budgets/cap', { amount }),
-    onSuccess: (data) => queryClient.setQueryData(['budget-plan'], data),
+    mutationFn: ({ amount, user_id }: { amount: number | null; user_id: string }) =>
+      api.patch<MonthlyPlan>('/budgets/cap', { amount, user_id }),
+    onSuccess: () => invalidateBudgetViews(queryClient),
   });
 }
 
@@ -458,8 +473,8 @@ export function useSetCategoryVariable() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ categoryId, variable }: { categoryId: string; variable: boolean }) =>
-      api.patch<MonthlyPlan>(`/budgets/variable/${categoryId}`, { variable }),
-    onSuccess: (data) => queryClient.setQueryData(['budget-plan'], data),
+      api.patch<void>(`/budgets/variable/${categoryId}`, { variable }),
+    onSuccess: () => invalidateBudgetViews(queryClient),
   });
 }
 

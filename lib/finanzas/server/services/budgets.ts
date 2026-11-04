@@ -8,11 +8,13 @@ export const BUDGET_SELECT = `
   category:fin_categories (id, name, color)
 `;
 
-export async function listBudgets(coupleId: string): Promise<BudgetWithCategory[]> {
+/** Topes de una persona (Configuración muestra solo los propios). */
+export async function listBudgets(coupleId: string, userId: string): Promise<BudgetWithCategory[]> {
   const { data, error } = await supabaseAdmin
     .from('fin_budgets')
     .select(BUDGET_SELECT)
-    .eq('couple_id', coupleId);
+    .eq('couple_id', coupleId)
+    .eq('user_id', userId);
 
   if (error) throw error;
 
@@ -39,24 +41,33 @@ export async function getBudget(
 }
 
 /**
- * Presupuesto mensual: tope total, topes por rubro y lo gastado en el mes,
- * con los recortes a los rubros variables ya calculados.
+ * Presupuesto mensual de una persona (`userId`) o de la pareja (null): tope,
+ * topes por rubro y lo gastado en el mes, con los recortes a los variables
+ * ya calculados. El de la pareja es la suma de los de cada uno.
  */
-export async function getMonthlyPlan(coupleId: string, month: string): Promise<MonthlyPlan> {
+export async function getMonthlyPlan(coupleId: string, month: string, userId: string | null): Promise<MonthlyPlan> {
   const { start, end } = monthBounds(month);
-  const [coupleRes, categoriesRes, budgetsRes, expensesRes] = await Promise.all([
-    supabaseAdmin.from('couples').select('fin_tope_mensual').eq('id', coupleId).single(),
+  let membersQuery = supabaseAdmin.from('couple_members').select('fin_tope_mensual').eq('couple_id', coupleId).not('user_id', 'is', null);
+  let budgetsQuery = supabaseAdmin.from('fin_budgets').select('id, category_id, amount').eq('couple_id', coupleId);
+  let expensesQuery = supabaseAdmin
+    .from('fin_expenses')
+    .select('amount, category_id')
+    .eq('couple_id', coupleId)
+    .eq('status', 'confirmed')
+    .gte('expense_date', start)
+    .lte('expense_date', end);
+  if (userId) {
+    membersQuery = membersQuery.eq('user_id', userId);
+    budgetsQuery = budgetsQuery.eq('user_id', userId);
+    expensesQuery = expensesQuery.eq('user_id', userId);
+  }
+  const [membersRes, categoriesRes, budgetsRes, expensesRes] = await Promise.all([
+    membersQuery,
     supabaseAdmin.from('fin_categories').select('id, name, color, variable').eq('couple_id', coupleId).eq('kind', 'expense'),
-    supabaseAdmin.from('fin_budgets').select('id, category_id, amount').eq('couple_id', coupleId),
-    supabaseAdmin
-      .from('fin_expenses')
-      .select('amount, category_id')
-      .eq('couple_id', coupleId)
-      .eq('status', 'confirmed')
-      .gte('expense_date', start)
-      .lte('expense_date', end),
+    budgetsQuery,
+    expensesQuery,
   ]);
-  for (const res of [coupleRes, categoriesRes, budgetsRes, expensesRes]) {
+  for (const res of [membersRes, categoriesRes, budgetsRes, expensesRes]) {
     if (res.error) throw res.error;
   }
 
@@ -64,7 +75,15 @@ export async function getMonthlyPlan(coupleId: string, month: string): Promise<M
   for (const row of expensesRes.data ?? []) {
     spent.set(row.category_id, (spent.get(row.category_id) ?? 0) + Number(row.amount));
   }
-  const budgetBy = new Map((budgetsRes.data ?? []).map((b) => [b.category_id as string, b]));
+  // Juntos se suman los topes de cada uno; budget_id solo vale en la vista de una persona.
+  const budgetBy = new Map<string, { id: string | null; amount: number }>();
+  for (const b of budgetsRes.data ?? []) {
+    const prev = budgetBy.get(b.category_id as string);
+    budgetBy.set(b.category_id as string, {
+      id: userId ? (b.id as string) : null,
+      amount: (prev?.amount ?? 0) + Number(b.amount),
+    });
+  }
 
   const rubros: PlanRubroInput[] = (categoriesRes.data ?? [])
     .map((c) => {
@@ -74,8 +93,8 @@ export async function getMonthlyPlan(coupleId: string, month: string): Promise<M
         name: c.name as string,
         color: c.color as string,
         variable: Boolean(c.variable),
-        budget_id: (budget?.id as string) ?? null,
-        amount: budget ? Number(budget.amount) : 0,
+        budget_id: budget?.id ?? null,
+        amount: budget?.amount ?? 0,
         spent: round2(spent.get(c.id) ?? 0),
       };
     })
@@ -92,26 +111,29 @@ export async function getMonthlyPlan(coupleId: string, month: string): Promise<M
     });
   }
 
-  const cap = coupleRes.data?.fin_tope_mensual;
-  return buildMonthlyPlan(month, cap === null || cap === undefined ? null : Number(cap), rubros);
+  const caps = (membersRes.data ?? []).map((m) => m.fin_tope_mensual).filter((c) => c !== null && c !== undefined);
+  const cap = caps.length ? caps.reduce((acc, c) => acc + Number(c), 0) : null;
+  return buildMonthlyPlan(month, cap, rubros);
 }
 
 /**
- * Los topes por rubro no pueden sumar más que el tope mensual. `cambio` es
- * el tope que se está por guardar (o el nuevo tope mensual, con `cap`).
+ * Los topes por rubro de una persona no pueden sumar más que su tope
+ * mensual. `cambio` es el tope que se está por guardar (o el nuevo tope
+ * mensual, con `cap`).
  */
 export async function assertWithinCap(
   coupleId: string,
+  userId: string,
   cambio: { categoryId: string; amount: number } | { cap: number },
 ): Promise<void> {
-  const [coupleRes, budgetsRes] = await Promise.all([
-    supabaseAdmin.from('couples').select('fin_tope_mensual').eq('id', coupleId).single(),
-    supabaseAdmin.from('fin_budgets').select('category_id, amount').eq('couple_id', coupleId),
+  const [memberRes, budgetsRes] = await Promise.all([
+    supabaseAdmin.from('couple_members').select('fin_tope_mensual').eq('user_id', userId).single(),
+    supabaseAdmin.from('fin_budgets').select('category_id, amount').eq('couple_id', coupleId).eq('user_id', userId),
   ]);
-  if (coupleRes.error) throw coupleRes.error;
+  if (memberRes.error) throw memberRes.error;
   if (budgetsRes.error) throw budgetsRes.error;
 
-  const cap = 'cap' in cambio ? cambio.cap : coupleRes.data?.fin_tope_mensual;
+  const cap = 'cap' in cambio ? cambio.cap : memberRes.data?.fin_tope_mensual;
   if (cap === null || cap === undefined) return;
 
   const total = (budgetsRes.data ?? []).reduce(
