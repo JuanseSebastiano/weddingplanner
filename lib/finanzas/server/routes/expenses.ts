@@ -1,7 +1,7 @@
 import { Router } from '../http';
 import { z } from 'zod';
 import { supabaseAdmin } from '../lib/supabase';
-import { asyncHandler, badRequest, forbidden, notFound } from '../lib/errors';
+import { asyncHandler, badRequest, notFound } from '../lib/errors';
 import type { AuthedRequest } from '../middleware/auth';
 import { assertBelongsToHousehold, EXPENSE_SELECT, getExpense, listExpenses } from '../services/expenses';
 import { categorize } from '../services/rules-engine';
@@ -113,8 +113,7 @@ expensesRouter.patch(
     const id = req.params.id as string;
     const existing = await getExpense(req.auth.coupleId, id);
     if (!existing) throw notFound('Gasto no encontrado');
-    // Se ve todo lo del hogar, pero cada uno edita solo lo suyo.
-    if (existing.user_id !== req.auth.userId) throw forbidden('Solo podés editar tus propios gastos');
+    // Cualquiera de la pareja puede corregir los gastos del otro.
 
     await assertBelongsToHousehold(req.auth.coupleId, {
       categoryId: parsed.data.category_id,
@@ -144,7 +143,6 @@ expensesRouter.delete(
     const id = req.params.id as string;
     const existing = await getExpense(req.auth.coupleId, id);
     if (!existing) throw notFound('Gasto no encontrado');
-    if (existing.user_id !== req.auth.userId) throw forbidden('Solo podés borrar tus propios gastos');
 
     const { error } = await supabaseAdmin
       .from('fin_expenses')
