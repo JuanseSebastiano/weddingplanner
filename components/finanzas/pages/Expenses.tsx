@@ -16,7 +16,6 @@ import {
   useCategoriesByKind,
   useDeleteExpense,
   useExpenses,
-  useMe,
 } from '../hooks/queries';
 import { useBreakpoint } from '../hooks/useBreakpoint';
 import { useTheme } from '../hooks/useTheme';
@@ -53,7 +52,6 @@ export function ExpensesPage() {
   const { theme } = useTheme();
   const categories = useCategoriesByKind('expense');
   const accounts = useAccounts();
-  const me = useMe();
   const expenses = useExpenses(filters);
   const remove = useDeleteExpense();
 
@@ -321,29 +319,27 @@ export function ExpensesPage() {
                     NO SUMA
                   </span>
                 ) : (
-                  expense.user_id === me.data?.user.id && (
-                    <span className="flex gap-2">
-                      <button
-                        type="button"
-                        className="text-[10.5px] text-ink-faint underline hover:text-accent-soft"
-                        onClick={() => {
-                          setEditing(expense);
-                          setShowForm(false);
-                        }}
-                      >
-                        editar
-                      </button>
-                      <button
-                        type="button"
-                        className="text-[10.5px] text-ink-faint underline hover:text-danger"
-                        onClick={() => {
-                          if (confirm('¿Borrar este gasto?')) remove.mutate(expense.id);
-                        }}
-                      >
-                        borrar
-                      </button>
-                    </span>
-                  )
+                  <span className="flex gap-2">
+                    <button
+                      type="button"
+                      className="text-[10.5px] text-ink-faint underline hover:text-accent-soft"
+                      onClick={() => {
+                        setEditing(expense);
+                        setShowForm(false);
+                      }}
+                    >
+                      editar
+                    </button>
+                    <button
+                      type="button"
+                      className="text-[10.5px] text-ink-faint underline hover:text-danger"
+                      onClick={() => {
+                        if (confirm('¿Borrar este gasto?')) remove.mutate(expense.id);
+                      }}
+                    >
+                      borrar
+                    </button>
+                  </span>
                 )}
               </span>
             </div>
@@ -402,7 +398,7 @@ export function ExpensesPage() {
                 <span className="chip bg-wash/[0.05] text-[11.5px] text-ink-secondary">
                   {expense.profile?.display_name ?? '—'}
                 </span>
-                {expense.user_id === me.data?.user.id && !isPending && (
+                {!isPending && (
                   <span className="ml-auto flex gap-3">
                     <button
                       type="button"
