@@ -1,7 +1,7 @@
 import { Router } from '../http';
 import { z } from 'zod';
 import { supabaseAdmin } from '../lib/supabase';
-import { asyncHandler, badRequest, conflict, notFound } from '../lib/errors';
+import { asyncHandler, badRequest, notFound } from '../lib/errors';
 import type { AuthedRequest } from '../middleware/auth';
 import { currentMonth } from '@nf/shared';
 import { assertWithinCap, BUDGET_SELECT, getBudget, getMonthlyPlan, listBudgets } from '../services/budgets';
@@ -118,25 +118,23 @@ budgetsRouter.post(
     await assertMember(req.auth.coupleId, userId);
     await assertWithinCap(req.auth.coupleId, userId, { categoryId: parsed.data.category_id, amount: parsed.data.amount });
 
+    // Si el rubro ya tenía tope (p. ej. dos guardados seguidos), se actualiza.
     const { data, error } = await supabaseAdmin
       .from('fin_budgets')
-      .insert({
-        couple_id: req.auth.coupleId,
-        category_id: parsed.data.category_id,
-        amount: parsed.data.amount,
-        user_id: userId,
-        created_by: req.auth.userId,
-      })
+      .upsert(
+        {
+          couple_id: req.auth.coupleId,
+          category_id: parsed.data.category_id,
+          amount: parsed.data.amount,
+          user_id: userId,
+          created_by: req.auth.userId,
+        },
+        { onConflict: 'couple_id,category_id,user_id' },
+      )
       .select(BUDGET_SELECT)
       .single();
 
-    if (error) {
-      // Unique (couple_id, category_id): el rubro ya tiene tope.
-      if (error.code === '23505') {
-        throw conflict('Ese rubro ya tiene un tope. Editá el que está en vez de crear otro.');
-      }
-      throw error;
-    }
+    if (error) throw error;
     res.status(201).json(data);
   }),
 );

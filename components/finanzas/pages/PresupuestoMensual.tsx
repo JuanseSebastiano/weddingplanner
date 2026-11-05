@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { formatCurrency, formatMonthLabel, parseAmount, type MonthlyPlanRubro } from '@nf/shared';
+import { formatCurrency, formatMonthLabel, type MonthlyPlanRubro } from '@nf/shared';
 import {
   useCreateBudget,
   useDeleteBudget,
@@ -21,7 +21,19 @@ function Barra({ valor, total, estado }: { valor: number; total: number; estado:
   );
 }
 
-/** Monto editable en el lugar: Enter o salir del campo guarda; vacío o 0 lo saca. */
+/** "1.500.000" o "1500000,50" → número: punto de miles y coma decimal, como se escribe acá. */
+function leerMonto(texto: string): number | null {
+  const limpio = texto.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.');
+  if (limpio === '') return null;
+  const n = Number(limpio);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Monto editable en el lugar: Enter o salir del campo guarda; vacío o 0 lo
+ * saca. Muestra lo guardado al instante, sin esperar al servidor, y si el
+ * servidor lo rechaza vuelve a lo escrito con el motivo debajo.
+ */
 function Monto({
   valor,
   etiqueta,
@@ -32,70 +44,85 @@ function Monto({
   onGuardar: (monto: number | null) => Promise<unknown>;
 }) {
   const [borrador, setBorrador] = useState<string | null>(null);
-  const [guardando, setGuardando] = useState(false);
+  // Lo recién guardado, hasta que el dato del servidor cambie.
+  const [optimista, setOptimista] = useState<{ monto: number | null; de: number | null } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const mostrado = optimista && optimista.de === valor ? optimista.monto : valor;
 
   async function guardar() {
     if (borrador === null) return;
-    const vacio = borrador.trim() === '';
-    const monto = vacio ? null : parseAmount(borrador);
+    const texto = borrador;
     setBorrador(null);
-    // Texto que no es un número: no se toca nada (null acá sacaría el tope).
-    if (!vacio && (monto === null || monto < 0)) return;
-    if (monto === (valor || null)) return;
-    setGuardando(true);
+    const vacio = texto.trim() === '';
+    const monto = vacio ? null : leerMonto(texto);
+    if (!vacio && monto === null) {
+      setBorrador(texto);
+      setError('Escribí un número, por ejemplo 150.000');
+      return;
+    }
+    const nuevo = monto === 0 ? null : monto;
+    setError(null);
+    if (nuevo === (mostrado || null)) return;
+    setOptimista({ monto: nuevo, de: valor });
     try {
-      await onGuardar(monto === 0 ? null : monto);
-    } finally {
-      setGuardando(false);
+      await onGuardar(nuevo);
+    } catch (err) {
+      setOptimista(null);
+      setBorrador(texto);
+      setError(err instanceof Error ? err.message : 'No se pudo guardar');
     }
   }
 
   return (
-    <input
-      className="input tabular w-[130px] shrink-0 text-right"
-      inputMode="decimal"
-      placeholder="Sin tope"
-      aria-label={etiqueta}
-      disabled={guardando}
-      value={borrador ?? (valor ? valor.toLocaleString('es-AR', { maximumFractionDigits: 2 }) : '')}
-      onFocus={(e) => setBorrador(e.currentTarget.value)}
-      onChange={(e) => setBorrador(e.target.value)}
-      onBlur={() => void guardar()}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') e.currentTarget.blur();
-        if (e.key === 'Escape') setBorrador(null);
-      }}
-    />
+    <div className="flex shrink-0 flex-col items-end gap-1">
+      <input
+        className={`input tabular w-[130px] text-right ${error ? 'border-danger' : ''}`}
+        inputMode="decimal"
+        placeholder="Sin tope"
+        aria-label={etiqueta}
+        aria-invalid={Boolean(error)}
+        value={borrador ?? (mostrado ? mostrado.toLocaleString('es-AR', { maximumFractionDigits: 2 }) : '')}
+        onFocus={(e) => {
+          if (borrador === null) setBorrador(mostrado ? String(mostrado).replace('.', ',') : '');
+          const input = e.currentTarget;
+          requestAnimationFrame(() => input.select());
+        }}
+        onChange={(e) => setBorrador(e.target.value)}
+        onBlur={() => void guardar()}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') e.currentTarget.blur();
+          if (e.key === 'Escape') {
+            setBorrador(null);
+            setError(null);
+          }
+        }}
+      />
+      {error && <span className="max-w-[260px] text-right text-[11px] leading-snug text-danger">{error}</span>}
+    </div>
   );
 }
 
 function Rubro({
   r,
   userId,
-  onError,
 }: {
   r: MonthlyPlanRubro;
   /** null = vista de los dos: solo lectura. */
   userId: string | null;
-  onError: (m: string | null) => void;
 }) {
   const crear = useCreateBudget();
   const actualizar = useUpdateBudget();
   const borrar = useDeleteBudget();
   const setVariable = useSetCategoryVariable();
 
+  // Los errores los muestra el campo, debajo del monto.
   async function guardarTope(monto: number | null) {
-    onError(null);
-    try {
-      if (monto === null) {
-        if (r.budget_id) await borrar.mutateAsync(r.budget_id);
-      } else if (r.budget_id) {
-        await actualizar.mutateAsync({ id: r.budget_id, amount: monto });
-      } else if (r.category_id && userId) {
-        await crear.mutateAsync({ category_id: r.category_id, amount: monto, user_id: userId });
-      }
-    } catch (err) {
-      onError(err instanceof Error ? err.message : 'No pudimos guardar el tope');
+    if (monto === null) {
+      if (r.budget_id) await borrar.mutateAsync(r.budget_id);
+    } else if (r.budget_id) {
+      await actualizar.mutateAsync({ id: r.budget_id, amount: monto });
+    } else if (r.category_id && userId) {
+      await crear.mutateAsync({ category_id: r.category_id, amount: monto, user_id: userId });
     }
   }
 
@@ -155,10 +182,9 @@ export function PresupuestoMensualPage() {
   // undefined = todavía no eligió: arranca en el propio.
   const [elegido, setElegido] = useState<string | null | undefined>(undefined);
   const userId = elegido === undefined ? (me.data?.user.id ?? null) : elegido;
-  const { data, isLoading } = useMonthlyPlan(userId);
+  const { data, isPlaceholderData } = useMonthlyPlan(userId);
   const setCap = useSetMonthlyCap();
-  const [error, setError] = useState<string | null>(null);
-  if (isLoading || !data || !me.data) return null;
+  if (!data || !me.data) return null;
 
   const members = me.data.members;
   const opciones = members.length > 1 ? [...members, { id: null, display_name: 'Juntos' }] : members;
@@ -166,17 +192,11 @@ export function PresupuestoMensualPage() {
   const estadoTotal = data.cap === null ? 'ok' : data.spent > data.cap ? 'exceeded' : data.spent >= data.cap * 0.8 ? 'warning' : 'ok';
 
   async function guardarTope(monto: number | null) {
-    if (!userId) return;
-    setError(null);
-    try {
-      await setCap.mutateAsync({ amount: monto, user_id: userId });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'No pudimos guardar el tope');
-    }
+    if (userId) await setCap.mutateAsync({ amount: monto, user_id: userId });
   }
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className={`flex flex-col gap-[18px] transition-opacity ${isPlaceholderData ? 'opacity-60' : ''}`}>
       <div className="flex flex-col gap-1.5">
         <span className="eyebrow">{formatMonthLabel(data.month).toUpperCase()}</span>
         <h1 className="m-0 font-serif text-2xl font-normal lg:text-[28px]">Presupuesto mensual</h1>
@@ -189,10 +209,7 @@ export function PresupuestoMensualPage() {
               key={o.id ?? 'juntos'}
               type="button"
               aria-pressed={userId === o.id}
-              onClick={() => {
-                setError(null);
-                setElegido(o.id);
-              }}
+              onClick={() => setElegido(o.id)}
               className={`rounded-full px-3.5 py-1.5 text-xs transition-colors ${
                 userId === o.id ? 'bg-accent text-accent-on' : 'text-ink-secondary'
               }`}
@@ -214,7 +231,7 @@ export function PresupuestoMensualPage() {
             </span>
           </div>
           {userId ? (
-            <Monto valor={data.cap} etiqueta="Tope mensual" onGuardar={guardarTope} />
+            <Monto key={userId} valor={data.cap} etiqueta="Tope mensual" onGuardar={guardarTope} />
           ) : (
             <span className="tabular text-[15px] font-semibold text-ink-primary">
               {data.cap === null ? 'Sin tope' : formatCurrency(data.cap)}
@@ -246,7 +263,6 @@ export function PresupuestoMensualPage() {
               : `Los rubros se pasaron ${formatCurrency(data.excess)}: se recortó de los variables para no pasarse del tope.`}
           </p>
         )}
-        {error && <p className="m-0 text-xs text-danger">{error}</p>}
       </div>
 
       <div className="card flex flex-col px-[22px] py-5">
@@ -258,7 +274,7 @@ export function PresupuestoMensualPage() {
         </div>
         <ul className="m-0 flex list-none flex-col p-0">
           {data.rubros.map((r) => (
-            <Rubro key={`${userId}-${r.category_id ?? 'sin-rubro'}`} r={r} userId={userId} onError={setError} />
+            <Rubro key={`${userId}-${r.category_id ?? 'sin-rubro'}`} r={r} userId={userId} />
           ))}
         </ul>
       </div>

@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   Account,
   AvailableSummary,
@@ -456,6 +456,8 @@ export function useMonthlyPlan(userId: string | null) {
   return useQuery({
     queryKey: ['budget-plan', userId],
     queryFn: () => api.get<MonthlyPlan>(`/budgets/plan${toQueryString({ user_id: userId ?? undefined })}`),
+    // Al cambiar de pestaña se sigue viendo la anterior hasta que llega la nueva.
+    placeholderData: keepPreviousData,
   });
 }
 
