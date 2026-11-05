@@ -5,6 +5,7 @@ import { authorizedClient, listCredentials, loadCredential, type GmailCredential
 import { normalizeMessage } from './message';
 import { parseEmail } from './parsers/index';
 import { applyBalanzEmail, isBalanzBoletos } from './balanz';
+import { isCardStatement, saveCardStatement } from './statements';
 import type { NormalizedEmail, ParsedNotification } from './parsers/types';
 import { findMatchingRule, loadRules } from '../services/rules-engine';
 import { dayWindow, isSameCharge } from '../services/shortcut';
@@ -129,6 +130,10 @@ export async function ingestEmail(
   // Antes de la cadena de parsers: el genérico lo tomaría como una compra.
   if (isBalanzBoletos(email)) {
     return applyBalanzEmail(context, email, (fields) => logIngestion(context, email, fields));
+  }
+  // Un resumen de tarjeta no es una compra: se guardan sus totales.
+  if (isCardStatement(email)) {
+    return saveCardStatement(context, email, (fields) => logIngestion(context, email, fields));
   }
 
   const result = parseEmail(email);

@@ -16,6 +16,7 @@ import { rulesRouter } from "@/lib/finanzas/server/routes/rules";
 import { billsRouter } from "@/lib/finanzas/server/routes/bills";
 import { gmailRouter } from "@/lib/finanzas/server/routes/gmail";
 import { shortcutRouter } from "@/lib/finanzas/server/routes/shortcut";
+import { statementsRouter } from "@/lib/finanzas/server/routes/statements";
 
 // La sincronización de Gmail (manual o por cron) puede tardar.
 export const maxDuration = 60;
@@ -42,6 +43,7 @@ const MOUNTS = [
   { prefix: "/review", router: reviewRouter, before: auth },
   { prefix: "/rules", router: rulesRouter, before: auth },
   { prefix: "/bills", router: billsRouter, before: auth },
+  { prefix: "/statements", router: statementsRouter, before: auth },
 ];
 
 function handler(request: Request) {
