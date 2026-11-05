@@ -90,7 +90,8 @@ export async function getDashboardSummary(
     ),
     // Los topes no dependen del mes: son recurrentes y se comparan contra
     // el gasto del mes consultado más abajo.
-    supabaseAdmin.from('fin_budgets').select(BUDGET_SELECT).eq('couple_id', coupleId),
+    // Con una persona elegida, solo sus topes.
+    soloDe(supabaseAdmin.from('fin_budgets').select(BUDGET_SELECT).eq('couple_id', coupleId), userId),
   ]);
 
   for (const res of [expensesRes, categoriesRes, membersRes, pendingRes]) {
@@ -161,10 +162,16 @@ export async function getDashboardSummary(
       .filter((entry): entry is CategoryTotal & { category_id: string } => entry.category_id !== null)
       .map((entry) => [entry.category_id, entry.total]),
   );
-  const budgets = buildBudgetStatuses(
-    (budgetsRes.data ?? []) as unknown as BudgetWithCategory[],
-    spentByCategory,
-  );
+  // Cada uno tiene sus topes: juntos, el del rubro es la suma de los dos.
+  const budgetByCategory = new Map<string, BudgetWithCategory>();
+  for (const budget of (budgetsRes.data ?? []) as unknown as BudgetWithCategory[]) {
+    const prev = budgetByCategory.get(budget.category_id);
+    budgetByCategory.set(
+      budget.category_id,
+      prev ? { ...prev, amount: Number(prev.amount) + Number(budget.amount) } : budget,
+    );
+  }
+  const budgets = buildBudgetStatuses([...budgetByCategory.values()], spentByCategory);
 
   // --- Comparativa entre las dos cuentas -------------------------------
   const userTotals = new Map<string, UserTotal>(
