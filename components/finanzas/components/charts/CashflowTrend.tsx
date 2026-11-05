@@ -53,7 +53,7 @@ export function CashflowTrend({ data, compact }: Props) {
             <span className="inline-flex items-center gap-[7px] text-xs text-ink-secondary">
               <span
                 className="h-[9px] w-[9px] rounded-full"
-                style={{ background: COLORS.accent }}
+                style={{ background: COLORS.accentB }}
                 aria-hidden
               />
               Ingresos
@@ -61,7 +61,7 @@ export function CashflowTrend({ data, compact }: Props) {
             <span className="inline-flex items-center gap-[7px] text-xs text-ink-secondary">
               <span
                 className="h-[9px] w-[9px] rounded-[2px]"
-                style={{ background: COLORS.accentB }}
+                style={{ background: COLORS.accent }}
                 aria-hidden
               />
               Egresos
@@ -87,7 +87,7 @@ export function CashflowTrend({ data, compact }: Props) {
                       className="w-full animate-[nf-grow_620ms_cubic-bezier(0.22,1,0.36,1)_both] rounded-t-[5px]"
                       style={{
                         height: `${((point.income / max) * 100).toFixed(1)}%`,
-                        background: COLORS.accent,
+                        background: COLORS.accentB,
                         transformOrigin: 'bottom',
                         animationDelay: `${index * 45}ms`,
                         opacity: isLast ? 1 : 0.78,
@@ -97,7 +97,7 @@ export function CashflowTrend({ data, compact }: Props) {
                       className="w-full animate-[nf-grow_620ms_cubic-bezier(0.22,1,0.36,1)_both] rounded-t-[5px]"
                       style={{
                         height: `${((point.expense / max) * 100).toFixed(1)}%`,
-                        background: COLORS.accentB,
+                        background: COLORS.accent,
                         transformOrigin: 'bottom',
                         animationDelay: `${index * 45 + 20}ms`,
                         opacity: isLast ? 1 : 0.78,
@@ -110,7 +110,7 @@ export function CashflowTrend({ data, compact }: Props) {
                       dejaría de ser proporcional al monto. */}
                   <span
                     className="tabular h-[14px] shrink-0 text-[10px] leading-[14px]"
-                    style={{ color: negative ? COLORS.danger : COLORS.accent }}
+                    style={{ color: negative ? COLORS.danger : COLORS.accentB }}
                   >
                     {short(point.net)}
                   </span>
